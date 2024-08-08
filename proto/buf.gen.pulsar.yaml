@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
+# https://docs.cosmos.network/main/build/tooling/protobuf#bufgenpulsaryaml
+version: v1
+managed:
+  enabled: true
+  go_package_prefix:
+    default: github.com/ondoprotocol/usdy-noble/api
+    except:
+      - buf.build/googleapis/googleapis
+      - buf.build/cosmos/gogo-proto
+      - buf.build/cosmos/cosmos-proto
+    override:
+      buf.build/cosmos/cosmos-sdk: cosmossdk.io/api
+plugins:
+  - name: go-pulsar
+    out: ../api
+    opt: paths=source_relative
+  - name: go-grpc
+    out: ../api
+    opt: paths=source_relative
