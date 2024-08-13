@@ -5,6 +5,7 @@ package aura.v1;
 import "aura/v1/genesis.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types";
 
@@ -53,8 +54,8 @@ message QueryPausedResponse {
 message QueryOwner {}
 
 message QueryOwnerResponse {
-  string owner = 1;
-  string pending_owner = 2;
+  string owner = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string pending_owner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
 
 message QueryBurners {}
