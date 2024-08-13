@@ -21,10 +21,11 @@ service Msg {
 
 // MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
 message MsgTransferOwnership {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name)           = "aura/blocklist/TransferOwnership";
+  
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
-  option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "blocklist/MsgTransferOwnership";
 
   string signer = 1;
   string new_owner = 2;
@@ -35,10 +36,11 @@ message MsgTransferOwnershipResponse {}
 
 // MsgAcceptOwnership implements the acceptOwnership (0x79ba5097) method.
 message MsgAcceptOwnership {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name)           = "aura/blocklist/AcceptOwnership";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
-  option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "blocklist/MsgAcceptOwnership";
 
   string signer = 1;
 }
@@ -48,10 +50,11 @@ message MsgAcceptOwnershipResponse {}
 
 // MsgAddToBlocklist implements the addToBlocklist (0xf71a55f8) method.
 message MsgAddToBlocklist {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name)           = "aura/blocklist/AddToBlocklist";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
-  option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "blocklist/MsgAddToBlocklist";
 
   string signer = 1;
   repeated string accounts = 2;
@@ -62,10 +65,11 @@ message MsgAddToBlocklistResponse {}
 
 // MsgRemoveFromBlocklist implements the removeFromBlocklist (0xab63e69c) method.
 message MsgRemoveFromBlocklist {
+  option (cosmos.msg.v1.signer) = "signer";
+  option (amino.name)           = "aura/blocklist/RemoveFromBlocklist";
+  
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
-  option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "blocklist/MsgRemoveFromBlocklist";
 
   string signer = 1;
   repeated string accounts = 2;
