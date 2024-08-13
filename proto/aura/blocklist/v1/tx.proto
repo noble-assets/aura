@@ -7,6 +7,8 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist";
 
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   rpc TransferOwnership(MsgTransferOwnership) returns (MsgTransferOwnershipResponse);
   rpc AcceptOwnership(MsgAcceptOwnership) returns (MsgAcceptOwnershipResponse);
 
@@ -20,6 +22,7 @@ service Msg {
 message MsgTransferOwnership {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string new_owner = 2;
@@ -32,6 +35,7 @@ message MsgTransferOwnershipResponse {}
 message MsgAcceptOwnership {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
 }
@@ -43,6 +47,7 @@ message MsgAcceptOwnershipResponse {}
 message MsgAddToBlocklist {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   repeated string accounts = 2;
@@ -55,6 +60,7 @@ message MsgAddToBlocklistResponse {}
 message MsgRemoveFromBlocklist {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   repeated string accounts = 2;
