@@ -7,6 +7,8 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types";
 
 service Msg {
+  option (cosmos.msg.v1.service) = true;
+
   rpc Burn(aura.v1.MsgBurn) returns (aura.v1.MsgBurnResponse);
   rpc Mint(aura.v1.MsgMint) returns (aura.v1.MsgMintResponse);
 
@@ -36,6 +38,7 @@ service Msg {
 message MsgBurn {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string from = 2;
@@ -50,6 +53,7 @@ message MsgBurnResponse {}
 message MsgMint {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string to = 2;
@@ -64,6 +68,7 @@ message MsgMintResponse {}
 message MsgPause {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
 }
@@ -73,6 +78,7 @@ message MsgPauseResponse {}
 message MsgUnpause {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
 }
@@ -82,6 +88,7 @@ message MsgUnpauseResponse {}
 message MsgTransferOwnership {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string new_owner = 2;
@@ -92,6 +99,7 @@ message MsgTransferOwnershipResponse {}
 message MsgAcceptOwnership {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
 }
@@ -101,6 +109,7 @@ message MsgAcceptOwnershipResponse {}
 message MsgAddBurner {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string burner = 2;
@@ -115,6 +124,7 @@ message MsgAddBurnerResponse {}
 message MsgRemoveBurner {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string burner = 2;
@@ -125,6 +135,7 @@ message MsgRemoveBurnerResponse {}
 message MsgSetBurnerAllowance {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string burner = 2;
@@ -139,6 +150,7 @@ message MsgSetBurnerAllowanceResponse {}
 message MsgAddMinter {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string minter = 2;
@@ -153,6 +165,7 @@ message MsgAddMinterResponse {}
 message MsgRemoveMinter {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string minter = 2;
@@ -163,6 +176,7 @@ message MsgRemoveMinterResponse {}
 message MsgSetMinterAllowance {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string minter = 2;
@@ -177,6 +191,7 @@ message MsgSetMinterAllowanceResponse {}
 message MsgAddPauser {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string pauser = 2;
@@ -187,6 +202,7 @@ message MsgAddPauserResponse {}
 message MsgRemovePauser {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string pauser = 2;
@@ -197,6 +213,7 @@ message MsgRemovePauserResponse {}
 message MsgAddBlockedChannel {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string channel = 2;
@@ -207,6 +224,7 @@ message MsgAddBlockedChannelResponse {}
 message MsgRemoveBlockedChannel {
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
+  option (cosmos.msg.v1.signer) = "signer";
 
   string signer = 1;
   string channel = 2;
