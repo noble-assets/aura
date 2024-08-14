@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -17,7 +18,6 @@ import (
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist"
 	"github.com/spf13/cobra"
-	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 // ConsensusVersion defines the current x/aura module consensus version.

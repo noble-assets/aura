@@ -3,7 +3,7 @@ module github.com/ondoprotocol/usdy-noble/e2e
 go 1.21
 
 require (
-	github.com/cosmos/cosmos-sdk v0.45.16
+	github.com/cosmos/cosmos-sdk v0.50.8
 	github.com/cosmos/ibc-go/v8 v8.4.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/ondoprotocol/usdy-noble v1.0.0
@@ -127,8 +127,7 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
-	github.com/tendermint/tendermint v0.34.27 // indirect
-	github.com/tendermint/tm-db v0.6.7 // indirect
+	github.com/cosmos/cosmos-db v1.0.2 // indirect
 	github.com/tidwall/btree v1.5.0 // indirect
 	github.com/zondax/hid v0.9.2 // indirect
 	github.com/zondax/ledger-go v0.14.3 // indirect
@@ -183,7 +182,4 @@ replace (
 
 	// use cosmos compatible syndtr/goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-
-	// use cometbft
-	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.27
 )

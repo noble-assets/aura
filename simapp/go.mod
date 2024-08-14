@@ -3,13 +3,13 @@ module github.com/ondoprotocol/usdy-noble/simapp
 go 1.21
 
 require (
-	github.com/cosmos/cosmos-sdk v0.45.16
+	github.com/cosmos/cosmos-sdk v0.50.8
 	github.com/cosmos/ibc-go/v8 v8.4.0
 	github.com/ondoprotocol/usdy-noble v1.0.0
 	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
-	github.com/tendermint/tendermint v0.34.27
-	github.com/tendermint/tm-db v0.6.7
+	github.com/cometbft/cometbft v0.38.7
+	github.com/cosmos/cosmos-db v1.0.2
 )
 
 require (
@@ -164,9 +164,6 @@ replace (
 
 	// use cosmos compatible syndtr/goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-
-	// use cometbft
-	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.27
 
 	// use cosmos compatible google.golang.org/grpc
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
