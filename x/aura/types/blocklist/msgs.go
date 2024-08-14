@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
 
 //
 
-var _ legacytx.LegacyMsg = &MsgTransferOwnership{}
+var _ sdk.Msg = &MsgTransferOwnership{}
 
 func (msg *MsgTransferOwnership) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -38,7 +37,7 @@ func (*MsgTransferOwnership) Type() string { return "aura/blocklist/TransferOwne
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAcceptOwnership{}
+var _ sdk.Msg = &MsgAcceptOwnership{}
 
 func (msg *MsgAcceptOwnership) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -63,7 +62,7 @@ func (*MsgAcceptOwnership) Type() string { return "aura/blocklist/AcceptOwnershi
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAddToBlocklist{}
+var _ sdk.Msg = &MsgAddToBlocklist{}
 
 func (msg *MsgAddToBlocklist) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -94,7 +93,7 @@ func (*MsgAddToBlocklist) Type() string { return "aura/blocklist/AddToBlocklist"
 
 //
 
-var _ legacytx.LegacyMsg = &MsgRemoveFromBlocklist{}
+var _ sdk.Msg = &MsgRemoveFromBlocklist{}
 
 func (msg *MsgRemoveFromBlocklist) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {

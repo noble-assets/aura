@@ -4,10 +4,10 @@ go 1.21
 
 require (
 	github.com/cosmos/cosmos-sdk v0.45.16
-	github.com/cosmos/ibc-go/v4 v4.6.0
+	github.com/cosmos/ibc-go/v8 v8.4.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/ondoprotocol/usdy-noble v1.0.0
-	github.com/strangelove-ventures/interchaintest/v4 v4.0.0-20231026153934-334934f17a68
+	github.com/strangelove-ventures/interchaintest/v8 v8.6.1
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/zap v1.24.0
 )
