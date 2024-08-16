@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"cosmossdk.io/store/streaming"
+	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/upgrade"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
@@ -108,9 +109,9 @@ type SimApp struct {
 
 	mm           *module.Manager
 	configurator module.Configurator
-	keys         map[string]*sdk.KVStoreKey
-	mkeys        map[string]*sdk.MemoryStoreKey
-	tkeys        map[string]*sdk.TransientStoreKey
+	keys         map[string]*storetypes.KVStoreKey
+	mkeys        map[string]*storetypes.MemoryStoreKey
+	tkeys        map[string]*storetypes.TransientStoreKey
 
 	// Cosmos SDK Modules
 	AccountKeeper authkeeper.AccountKeeper
@@ -174,13 +175,13 @@ func NewSimApp(
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, paramstypes.StoreKey, stakingtypes.StoreKey,
 		upgradetypes.ModuleName, capabilitytypes.StoreKey, host.StoreKey, transfertypes.StoreKey,
 		auratypes.ModuleName,
 	)
-	mkeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+	mkeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 
 	if _, _, err := streaming.LoadStreamingServices(bApp, appOpts, appCodec, keys); err != nil {
 		fmt.Printf("failed to load state streaming: %s", err)
@@ -244,7 +245,7 @@ func NewSimApp(
 		bank.NewAppModule(appCodec, app.BankKeeper.(bankkeeper.BaseKeeper), app.AccountKeeper),
 		genutil.NewAppModule(
 			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
-			encodingConfig.TxConfig,
+			txConfig,
 		),
 		params.NewAppModule(app.ParamsKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
