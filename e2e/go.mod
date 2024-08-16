@@ -5,7 +5,7 @@ go 1.22.2
 toolchain go1.23.0
 
 require (
-	github.com/cosmos/cosmos-sdk v0.50.8
+	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/cosmos/ibc-go/v8 v8.4.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/ondoprotocol/usdy-noble v1.0.0
