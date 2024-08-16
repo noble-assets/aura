@@ -19,7 +19,7 @@ func (k BankKeeper) BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins)
 	address := authtypes.NewModuleAddress(moduleName).String()
 
 	balance := k.Balances[address]
-	newBalance, negative := balance.SafeSub(amt)
+	newBalance, negative := balance.SafeSub(amt...)
 	if negative {
 		return sdkerrors.Wrapf(errors.ErrInsufficientFunds, "%s is smaller than %s", balance, amt)
 	}
@@ -75,7 +75,7 @@ func (k BankKeeper) SendCoins(ctx sdk.Context, fromAddr sdk.AccAddress, toAddr s
 	}
 
 	balance := k.Balances[fromAddr.String()]
-	newBalance, negative := balance.SafeSub(amt)
+	newBalance, negative := balance.SafeSub(amt...)
 	if negative {
 		return sdkerrors.Wrapf(errors.ErrInsufficientFunds, "%s is smaller than %s", balance, amt)
 	}

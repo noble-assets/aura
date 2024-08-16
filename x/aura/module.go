@@ -90,6 +90,10 @@ func NewAppModule(keeper *keeper.Keeper) AppModule {
 	}
 }
 
+func (m AppModule) IsAppModule() {}
+
+func (m AppModule) IsOnePerModuleType() {}
+
 func (m AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) []abci.ValidatorUpdate {
 	var genesis types.GenesisState
 	cdc.MustUnmarshalJSON(bz, &genesis)
@@ -104,12 +108,6 @@ func (m AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawM
 }
 
 func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
-
-func (AppModule) Route() sdk.Route { return sdk.Route{} }
-
-func (AppModule) QuerierRoute() string { return types.ModuleName }
-
-func (AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier { return nil }
 
 func (m AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServer(m.keeper))
