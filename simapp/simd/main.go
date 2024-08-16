@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	clientv2helpers "cosmossdk.io/client/v2/helpers"
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ondoprotocol/usdy-noble/simapp"
@@ -34,7 +33,7 @@ func main() {
 	config.Seal()
 
 	rootCmd := cmd.NewRootCmd()
-	if err := svrcmd.Execute(rootCmd, clientv2helpers.EnvPrefix, simapp.DefaultNodeHome); err != nil {
+	if err := svrcmd.Execute(rootCmd, "NOBLE", simapp.DefaultNodeHome); err != nil {
 		fmt.Fprintln(rootCmd.OutOrStderr(), err)
 		os.Exit(1)
 	}

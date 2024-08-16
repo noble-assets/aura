@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
@@ -63,7 +64,7 @@ func (k *Keeper) DeleteBurner(ctx sdk.Context, burner string) {
 	store.Delete(types.BurnerKey(burner))
 }
 
-func (k *Keeper) GetBurner(ctx sdk.Context, burner string) (allowance sdk.Int) {
+func (k *Keeper) GetBurner(ctx sdk.Context, burner string) (allowance math.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.BurnerKey(burner))
 
@@ -78,7 +79,7 @@ func (k *Keeper) GetBurners(ctx sdk.Context) (burners []types.Burner) {
 	defer itr.Close()
 
 	for ; itr.Valid(); itr.Next() {
-		var allowance sdk.Int
+		var allowance math.Int
 		_ = allowance.Unmarshal(itr.Value())
 
 		burners = append(burners, types.Burner{
@@ -95,7 +96,7 @@ func (k *Keeper) HasBurner(ctx sdk.Context, burner string) bool {
 	return store.Has(types.BurnerKey(burner))
 }
 
-func (k *Keeper) SetBurner(ctx sdk.Context, burner string, allowance sdk.Int) {
+func (k *Keeper) SetBurner(ctx sdk.Context, burner string, allowance math.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz, _ := allowance.Marshal()
 	store.Set(types.BurnerKey(burner), bz)
@@ -108,7 +109,7 @@ func (k *Keeper) DeleteMinter(ctx sdk.Context, minter string) {
 	store.Delete(types.MinterKey(minter))
 }
 
-func (k *Keeper) GetMinter(ctx sdk.Context, minter string) (allowance sdk.Int) {
+func (k *Keeper) GetMinter(ctx sdk.Context, minter string) (allowance math.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.MinterKey(minter))
 
@@ -123,7 +124,7 @@ func (k *Keeper) GetMinters(ctx sdk.Context) (minters []types.Minter) {
 	defer itr.Close()
 
 	for ; itr.Valid(); itr.Next() {
-		var allowance sdk.Int
+		var allowance math.Int
 		_ = allowance.Unmarshal(itr.Value())
 
 		minters = append(minters, types.Minter{
@@ -140,7 +141,7 @@ func (k *Keeper) HasMinter(ctx sdk.Context, minter string) bool {
 	return store.Has(types.MinterKey(minter))
 }
 
-func (k *Keeper) SetMinter(ctx sdk.Context, minter string, allowance sdk.Int) {
+func (k *Keeper) SetMinter(ctx sdk.Context, minter string, allowance math.Int) {
 	store := ctx.KVStore(k.storeKey)
 	bz, _ := allowance.Marshal()
 	store.Set(types.MinterKey(minter), bz)
