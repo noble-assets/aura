@@ -149,8 +149,8 @@ replace (
 	// use cosmos compatible ChainSafe/go-schnorrkel
 	github.com/ChainSafe/go-schnorrkel => github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d
 
-	// use send restriction compatible cosmos/cosmos-sdk
-	github.com/cosmos/cosmos-sdk => github.com/noble-assets/cosmos-sdk v0.45.17-0.20240626105200-928be03f1633
+	// // use send restriction compatible cosmos/cosmos-sdk
+	// github.com/cosmos/cosmos-sdk => github.com/noble-assets/cosmos-sdk v0.45.17-0.20240626105200-928be03f1633
 
 	// use macos sonoma compatible cosmos/ledger-cosmos-go
 	github.com/cosmos/ledger-cosmos-go => github.com/cosmos/ledger-cosmos-go v0.12.4
