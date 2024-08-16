@@ -5,8 +5,8 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	"github.com/strangelove-ventures/interchaintest/v4/ibc"
-	"github.com/strangelove-ventures/interchaintest/v4/testutil"
+	"github.com/strangelove-ventures/interchaintest/v8/ibc"
+	"github.com/strangelove-ventures/interchaintest/v8/testutil"
 	"github.com/stretchr/testify/require"
 )
 
