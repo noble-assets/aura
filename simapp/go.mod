@@ -164,7 +164,4 @@ replace (
 
 	// use cosmos compatible syndtr/goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-
-	// use cosmos compatible google.golang.org/grpc
-	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
