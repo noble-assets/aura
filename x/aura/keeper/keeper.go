@@ -4,33 +4,132 @@ import (
 	"context"
 	"fmt"
 
-	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/collections"
+	"cosmossdk.io/core/store"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
+	"github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist"
 )
 
 type Keeper struct {
-	cdc      codec.Codec
-	storeKey storetypes.StoreKey
+	cdc          codec.Codec
+	storeService store.KVStoreService
 
 	Denom      string
 	bankKeeper types.BankKeeper
+
+	Schema collections.Schema
+
+	Paused          collections.Item[bool]
+	Owner           collections.Item[[]byte]
+	PendingOwner    collections.Item[[]byte]
+	Burner          collections.Map[[]byte, []byte]
+	Minter          collections.Map[[]byte, []byte]
+	Pauser          collections.KeySet[[]byte]
+	BlockedChannels collections.KeySet[[]byte]
+
+	// Blocklist
+	BlocklistOwner        collections.Item[string]
+	BlocklistPendingOwner collections.Item[string]
+	BlockedAddresses      collections.KeySet[[]byte]
 }
 
 func NewKeeper(
 	cdc codec.Codec,
-	storeKey storetypes.StoreKey,
+	storeService store.KVStoreService,
 	denom string,
 	bankKeeper types.BankKeeper,
 ) *Keeper {
+	sb := collections.NewSchemaBuilder(storeService)
+	paused := collections.NewItem(
+		sb,
+		types.PausedKey,
+		"paused",
+		collections.BoolValue,
+	)
+	owner := collections.NewItem(
+		sb,
+		types.OwnerKey,
+		"owner",
+		collections.BytesValue,
+	)
+	pendingOwner := collections.NewItem(
+		sb,
+		types.PendingOwnerKey,
+		"pendingOwner",
+		collections.BytesValue,
+	)
+	burner := collections.NewMap(
+		sb,
+		types.BurnerPrefix,
+		"burner",
+		collections.BytesKey,
+		collections.BytesValue,
+	)
+	minter := collections.NewMap(
+		sb,
+		types.MinterPrefix,
+		"minter",
+		collections.BytesKey,
+		collections.BytesValue,
+	)
+	pauser := collections.NewKeySet(
+		sb,
+		types.PauserPrefix,
+		"pauser",
+		collections.BytesKey,
+	)
+	blockedChannels := collections.NewKeySet(
+		sb,
+		types.BlockedChannelPrefix,
+		"blockedChannels",
+		collections.BytesKey,
+	)
+
+	blocklistOwner := collections.NewItem(
+		sb,
+		blocklist.OwnerKey,
+		"blocklistOwner",
+		collections.StringValue,
+	)
+	blocklistPendingOwner := collections.NewItem(
+		sb,
+		blocklist.PendingOwnerKey,
+		"blocklistPendingOwner",
+		collections.StringValue,
+	)
+	blockedAddresses := collections.NewKeySet(
+		sb,
+		blocklist.BlockedAddressPrefix,
+		"blockedAddresses",
+		collections.BytesKey,
+	)
+	schema, err := sb.Build()
+	if err != nil {
+		panic(err)
+	}
+
 	return &Keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:          cdc,
+		storeService: storeService,
 
 		Denom:      denom,
 		bankKeeper: bankKeeper,
+
+		Schema:          schema,
+		Paused:          paused,
+		Owner:           owner,
+		PendingOwner:    pendingOwner,
+		Burner:          burner,
+		Minter:          minter,
+		Pauser:          pauser,
+		BlockedChannels: blockedChannels,
+		// Blocklist collections
+		BlocklistOwner:        blocklistOwner,
+		BlocklistPendingOwner: blocklistPendingOwner,
+		BlockedAddresses:      blockedAddresses,
 	}
 }
 
