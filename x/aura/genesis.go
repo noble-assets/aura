@@ -30,17 +30,54 @@ func InitGenesis(ctx sdk.Context, k *keeper.Keeper, genesis types.GenesisState) 
 }
 
 func ExportGenesis(ctx sdk.Context, k *keeper.Keeper) *types.GenesisState {
+	blocklistOwner, err := k.GetBlocklistOwner(ctx)
+	if err != nil {
+		panic(err)
+	}
+	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
+	if err != nil {
+		panic(err)
+	}
+	blockedAddresses, err := k.GetBlockedAddresses(ctx)
+	if err != nil {
+		panic(err)
+	}
+	paused, err := k.GetPaused(ctx)
+	if err != nil {
+		panic(err)
+	}
+	owner, err := k.GetOwner(ctx)
+	if err != nil {
+		panic(err)
+	}
+	pendingOwner, err := k.GetPendingOwner(ctx)
+	if err != nil {
+		panic(err)
+	}
+	burners, err := k.GetBurners(ctx)
+	if err != nil {
+		panic(err)
+	}
+	minters, err := k.GetMinters(ctx)
+	if err != nil {
+		panic(err)
+	}
+	pausers, err := k.GetPausers(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	return &types.GenesisState{
 		BlocklistState: blocklist.GenesisState{
-			Owner:            k.GetBlocklistOwner(ctx),
-			PendingOwner:     k.GetBlocklistPendingOwner(ctx),
-			BlockedAddresses: k.GetBlockedAddresses(ctx),
+			Owner:            blocklistOwner,
+			PendingOwner:     blocklistPendingOwner,
+			BlockedAddresses: blockedAddresses,
 		},
-		Paused:       k.GetPaused(ctx),
-		Owner:        k.GetOwner(ctx),
-		PendingOwner: k.GetPendingOwner(ctx),
-		Burners:      k.GetBurners(ctx),
-		Minters:      k.GetMinters(ctx),
-		Pausers:      k.GetPausers(ctx),
+		Paused:       paused,
+		Owner:        owner,
+		PendingOwner: pendingOwner,
+		Burners:      burners,
+		Minters:      minters,
+		Pausers:      pausers,
 	}
 }

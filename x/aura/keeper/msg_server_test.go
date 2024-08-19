@@ -77,7 +77,9 @@ func TestBurn(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, bank.Balances[user.Address].IsZero())
 	require.True(t, bank.Balances[types.ModuleName].IsZero())
-	require.True(t, k.GetBurner(ctx, burner.Address).IsZero())
+	getburner, err := k.GetBurner(ctx, burner.Address)
+	require.NoError(t, err)
+	require.True(t, getburner.IsZero())
 
 	// ACT: Attempt another burn with insufficient allowance.
 	_, err = server.Burn(goCtx, &types.MsgBurn{
@@ -153,7 +155,9 @@ func TestMint(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, ONE, bank.Balances[user.Address].AmountOf(k.Denom))
 	require.True(t, bank.Balances[types.ModuleName].IsZero())
-	require.True(t, k.GetMinter(ctx, minter.Address).IsZero())
+	getminter, err := k.GetMinter(ctx, minter.Address)
+	require.NoError(t, err)
+	require.True(t, getminter.IsZero())
 
 	// ACT: Attempt another mint with insufficient allowance.
 	_, err = server.Mint(goCtx, &types.MsgMint{
@@ -180,7 +184,9 @@ func TestPause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, types.ErrInvalidPauser.Error())
-	require.False(t, k.GetPaused(ctx))
+	paused, err := k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.False(t, paused)
 
 	// ACT: Attempt to pause.
 	_, err = server.Pause(goCtx, &types.MsgPause{
@@ -188,7 +194,9 @@ func TestPause(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded.
 	require.NoError(t, err)
-	require.True(t, k.GetPaused(ctx))
+	paused, err = k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.True(t, paused)
 
 	// ACT: Attempt to pause again.
 	_, err = server.Pause(goCtx, &types.MsgPause{
@@ -196,7 +204,9 @@ func TestPause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to module being paused already.
 	require.ErrorContains(t, err, "module is already paused")
-	require.True(t, k.GetPaused(ctx))
+	paused, err = k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.True(t, paused)
 }
 
 func TestUnpause(t *testing.T) {
@@ -211,7 +221,9 @@ func TestUnpause(t *testing.T) {
 	_, err := server.Unpause(goCtx, &types.MsgUnpause{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
-	require.True(t, k.GetPaused(ctx))
+	paused, err := k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.True(t, paused)
 
 	// ARRANGE: Set owner in state.
 	owner := utils.TestAccount()
@@ -223,7 +235,9 @@ func TestUnpause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, types.ErrInvalidOwner.Error())
-	require.True(t, k.GetPaused(ctx))
+	paused, err = k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.True(t, paused)
 
 	// ACT: Attempt to unpause.
 	_, err = server.Unpause(goCtx, &types.MsgUnpause{
@@ -231,7 +245,9 @@ func TestUnpause(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded.
 	require.NoError(t, err)
-	require.False(t, k.GetPaused(ctx))
+	paused, err = k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.False(t, paused)
 
 	// ACT: Attempt to unpause again.
 	_, err = server.Unpause(goCtx, &types.MsgUnpause{
@@ -239,7 +255,9 @@ func TestUnpause(t *testing.T) {
 	})
 	// ASSERT: The action should've failed due to module being unpaused already.
 	require.ErrorContains(t, err, "module is already unpaused")
-	require.False(t, k.GetPaused(ctx))
+	paused, err = k.GetPaused(ctx)
+	require.NoError(t, err)
+	require.False(t, paused)
 }
 
 func TestTransferOwnership(t *testing.T) {
@@ -281,7 +299,9 @@ func TestTransferOwnership(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set a pending owner in state.
 	require.NoError(t, err)
-	require.Equal(t, pendingOwner.Address, k.GetPendingOwner(ctx))
+	getPendingOwner, err := k.GetPendingOwner(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pendingOwner.Address, getPendingOwner)
 }
 
 func TestAcceptOwnership(t *testing.T) {
@@ -311,8 +331,12 @@ func TestAcceptOwnership(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and updated the owner in state.
 	require.NoError(t, err)
-	require.Equal(t, pendingOwner.Address, k.GetOwner(ctx))
-	require.Empty(t, k.GetPendingOwner(ctx))
+	getowner, err := k.GetOwner(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pendingOwner.Address, getowner)
+	getpendingowner, err := k.GetPendingOwner(ctx)
+	require.NoError(t, err)
+	require.Empty(t, getpendingowner)
 }
 
 func TestAddBurner(t *testing.T) {
@@ -366,7 +390,9 @@ func TestAddBurner(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set burner in state.
 	require.NoError(t, err)
-	require.Equal(t, ONE, k.GetBurner(ctx, burner1.Address))
+	getburner, err := k.GetBurner(ctx, burner1.Address)
+	require.NoError(t, err)
+	require.Equal(t, ONE, getburner)
 }
 
 func TestRemoveBurner(t *testing.T) {
@@ -411,7 +437,9 @@ func TestRemoveBurner(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and removed burner in state.
 	require.NoError(t, err)
-	require.False(t, k.HasBurner(ctx, burner.Address))
+	hasburner, err := k.HasBurner(ctx, burner.Address)
+	require.NoError(t, err)
+	require.False(t, hasburner)
 }
 
 func TestSetBurnerAllowance(t *testing.T) {
@@ -467,7 +495,9 @@ func TestSetBurnerAllowance(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set burner allowance in state.
 	require.NoError(t, err)
-	require.Equal(t, ONE, k.GetBurner(ctx, burner.Address))
+	getburner, err := k.GetBurner(ctx, burner.Address)
+	require.NoError(t, err)
+	require.Equal(t, ONE, getburner)
 }
 
 func TestAddMinter(t *testing.T) {
@@ -521,7 +551,9 @@ func TestAddMinter(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set minter in state.
 	require.NoError(t, err)
-	require.Equal(t, ONE, k.GetMinter(ctx, minter1.Address))
+	getminter, err := k.GetMinter(ctx, minter1.Address)
+	require.NoError(t, err)
+	require.Equal(t, ONE, getminter)
 }
 
 func TestRemoveMinter(t *testing.T) {
@@ -566,7 +598,9 @@ func TestRemoveMinter(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and removed minter in state.
 	require.NoError(t, err)
-	require.False(t, k.HasMinter(ctx, minter.Address))
+	hasminter, err := k.HasMinter(ctx, minter.Address)
+	require.NoError(t, err)
+	require.False(t, hasminter)
 }
 
 func TestSetMinterAllowance(t *testing.T) {
@@ -622,7 +656,9 @@ func TestSetMinterAllowance(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set minter allowance in state.
 	require.NoError(t, err)
-	require.Equal(t, ONE, k.GetMinter(ctx, minter.Address))
+	getminter, err := k.GetMinter(ctx, minter.Address)
+	require.NoError(t, err)
+	require.Equal(t, ONE, getminter)
 }
 
 func TestAddPauser(t *testing.T) {
@@ -665,7 +701,9 @@ func TestAddPauser(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set pauser in state.
 	require.NoError(t, err)
-	require.True(t, k.HasPauser(ctx, pauser1.Address))
+	haspauser, err := k.HasPauser(ctx, pauser1.Address)
+	require.NoError(t, err)
+	require.True(t, haspauser)
 }
 
 func TestRemovePauser(t *testing.T) {
@@ -710,7 +748,9 @@ func TestRemovePauser(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and removed pauser in state.
 	require.NoError(t, err)
-	require.False(t, k.HasPauser(ctx, pauser.Address))
+	haspauser, err := k.HasPauser(ctx, pauser.Address)
+	require.NoError(t, err)
+	require.False(t, haspauser)
 }
 
 func TestAddBlockedChannel(t *testing.T) {
@@ -753,7 +793,9 @@ func TestAddBlockedChannel(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set channel in state.
 	require.NoError(t, err)
-	require.True(t, k.HasBlockedChannel(ctx, channel1))
+	hasblockedchannel, err := k.HasBlockedChannel(ctx, channel1)
+	require.NoError(t, err)
+	require.True(t, hasblockedchannel)
 }
 
 func TestRemoveBlockedChannel(t *testing.T) {
@@ -798,5 +840,7 @@ func TestRemoveBlockedChannel(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and removed channel in state.
 	require.NoError(t, err)
-	require.False(t, k.HasBlockedChannel(ctx, channel))
+	hasblockedchannel, err := k.HasBlockedChannel(ctx, channel)
+	require.NoError(t, err)
+	require.False(t, hasblockedchannel)
 }

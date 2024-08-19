@@ -145,23 +145,39 @@ func (k *Keeper) SendRestrictionFn(ctx sdk.Context, fromAddr, toAddr sdk.AccAddr
 			return toAddr, nil
 		}
 
-		if k.GetPaused(ctx) {
+		paused, err := k.Paused.Get(ctx)
+		if err != nil {
+			return toAddr, err
+		}
+		if paused {
 			return toAddr, fmt.Errorf("%s transfers are paused", k.Denom)
 		}
 
 		minting := fromAddr.Equals(types.ModuleAddress) && !toAddr.Equals(types.ModuleAddress)
 
 		if !minting {
-			if k.HasBlockedAddress(ctx, fromAddr) {
+			hasBlockedAddress, err := k.HasBlockedAddress(ctx, fromAddr)
+			if err != nil {
+				return toAddr, err
+			}
+			if hasBlockedAddress {
 				return toAddr, fmt.Errorf("%s is blocked from sending %s", fromAddr, k.Denom)
 			}
 		}
 
-		if k.HasBlockedAddress(ctx, toAddr) {
+		hasBlockedAddress, err := k.HasBlockedAddress(ctx, toAddr)
+		if err != nil {
+			return toAddr, err
+		}
+		if hasBlockedAddress {
 			return toAddr, fmt.Errorf("%s is blocked from receiving %s", toAddr, k.Denom)
 		}
 
-		for _, channel := range k.GetBlockedChannels(ctx) {
+		blockedChannels, err := k.GetBlockedChannels(ctx)
+		if err != nil {
+			return toAddr, err
+		}
+		for _, channel := range blockedChannels {
 			escrow := transfertypes.GetEscrowAddress(transfertypes.PortID, channel)
 
 			if toAddr.Equals(escrow) {

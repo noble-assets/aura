@@ -33,7 +33,8 @@ func (k queryServer) Paused(goCtx context.Context, req *types.QueryPaused) (*typ
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryPausedResponse{Paused: k.GetPaused(ctx)}, nil
+	paused, err := k.GetPaused(ctx)
+	return &types.QueryPausedResponse{Paused: paused}, err
 }
 
 func (k queryServer) Owner(goCtx context.Context, req *types.QueryOwner) (*types.QueryOwnerResponse, error) {
@@ -43,10 +44,15 @@ func (k queryServer) Owner(goCtx context.Context, req *types.QueryOwner) (*types
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	owner, err := k.GetOwner(ctx)
+	if err != nil {
+		return nil, err
+	}
+	pendingOwner, err := k.GetPendingOwner(ctx)
 	return &types.QueryOwnerResponse{
-		Owner:        k.GetOwner(ctx),
-		PendingOwner: k.GetPendingOwner(ctx),
-	}, nil
+		Owner:        owner,
+		PendingOwner: pendingOwner,
+	}, err
 }
 
 func (k queryServer) Burners(goCtx context.Context, req *types.QueryBurners) (*types.QueryBurnersResponse, error) {
@@ -56,7 +62,8 @@ func (k queryServer) Burners(goCtx context.Context, req *types.QueryBurners) (*t
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryBurnersResponse{Burners: k.GetBurners(ctx)}, nil
+	burners, err := k.GetBurners(ctx)
+	return &types.QueryBurnersResponse{Burners: burners}, err
 }
 
 func (k queryServer) Minters(goCtx context.Context, req *types.QueryMinters) (*types.QueryMintersResponse, error) {
@@ -66,7 +73,8 @@ func (k queryServer) Minters(goCtx context.Context, req *types.QueryMinters) (*t
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryMintersResponse{Minters: k.GetMinters(ctx)}, nil
+	minters, err := k.GetMinters(ctx)
+	return &types.QueryMintersResponse{Minters: minters}, err
 }
 
 func (k queryServer) Pausers(goCtx context.Context, req *types.QueryPausers) (*types.QueryPausersResponse, error) {
@@ -76,7 +84,8 @@ func (k queryServer) Pausers(goCtx context.Context, req *types.QueryPausers) (*t
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryPausersResponse{Pausers: k.GetPausers(ctx)}, nil
+	pausers, err := k.GetPausers(ctx)
+	return &types.QueryPausersResponse{Pausers: pausers}, err
 }
 
 func (k queryServer) BlockedChannels(goCtx context.Context, req *types.QueryBlockedChannels) (*types.QueryBlockedChannelsResponse, error) {
@@ -86,5 +95,6 @@ func (k queryServer) BlockedChannels(goCtx context.Context, req *types.QueryBloc
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	return &types.QueryBlockedChannelsResponse{BlockedChannels: k.GetBlockedChannels(ctx)}, nil
+	blockedChannels, err := k.GetBlockedChannels(ctx)
+	return &types.QueryBlockedChannelsResponse{BlockedChannels: blockedChannels}, err
 }
