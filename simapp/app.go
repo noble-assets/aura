@@ -37,6 +37,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 
@@ -111,11 +112,12 @@ type SimApp struct {
 	interfaceRegistry codectypes.InterfaceRegistry
 	txConfig          client.TxConfig
 
-	mm           *module.Manager
-	configurator module.Configurator
-	keys         map[string]*storetypes.KVStoreKey
-	mkeys        map[string]*storetypes.MemoryStoreKey
-	tkeys        map[string]*storetypes.TransientStoreKey
+	mm                 *module.Manager
+	BasicModuleManager module.BasicManager
+	configurator       module.Configurator
+	keys               map[string]*storetypes.KVStoreKey
+	mkeys              map[string]*storetypes.MemoryStoreKey
+	tkeys              map[string]*storetypes.TransientStoreKey
 
 	// Cosmos SDK Modules
 	AccountKeeper         authkeeper.AccountKeeper
@@ -306,6 +308,18 @@ func NewSimApp(
 		aura.NewAppModule(app.AuraKeeper),
 	)
 
+	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration and genesis verification.
+	// By default it is composed of all the module from the module manager.
+	// Additionally, app module basics can be overwritten by passing them as argument.
+	app.BasicModuleManager = module.NewBasicManagerFromManager(
+		app.mm,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+		})
+	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
+	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
+
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, stakingtypes.ModuleName,
 		ibcexported.ModuleName, transfertypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
@@ -341,9 +355,17 @@ func NewSimApp(
 	if err != nil {
 		panic(err)
 	}
+	postHandler, err := posthandler.NewPostHandler(
+		posthandler.HandlerOptions{},
+	)
+	if err != nil {
+		panic(err)
+	}
 
 	app.SetAnteHandler(anteHandler)
+	app.SetPostHandler(postHandler)
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -413,7 +435,7 @@ func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, _ config.APIConfig) {
 	// Register node gRPC service for grpc-gateway.
 	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 func (app *SimApp) RegisterTxService(clientCtx client.Context) {
