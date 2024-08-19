@@ -20,20 +20,20 @@ type Keeper struct {
 	Denom      string
 	bankKeeper types.BankKeeper
 
-	Schema collections.Schema
+	schema collections.Schema
 
-	Paused          collections.Item[bool]
-	Owner           collections.Item[[]byte]
-	PendingOwner    collections.Item[[]byte]
-	Burner          collections.Map[[]byte, []byte]
-	Minter          collections.Map[[]byte, []byte]
-	Pauser          collections.KeySet[[]byte]
-	BlockedChannels collections.KeySet[[]byte]
+	paused          collections.Item[bool]
+	owner           collections.Item[[]byte]
+	pendingOwner    collections.Item[[]byte]
+	burner          collections.Map[[]byte, []byte]
+	minter          collections.Map[[]byte, []byte]
+	pauser          collections.KeySet[[]byte]
+	blockedChannels collections.KeySet[[]byte]
 
 	// Blocklist
-	BlocklistOwner        collections.Item[string]
-	BlocklistPendingOwner collections.Item[string]
-	BlockedAddresses      collections.KeySet[[]byte]
+	blocklistOwner        collections.Item[string]
+	blocklistPendingOwner collections.Item[string]
+	blockedAddresses      collections.KeySet[[]byte]
 }
 
 func NewKeeper(
@@ -118,18 +118,18 @@ func NewKeeper(
 		Denom:      denom,
 		bankKeeper: bankKeeper,
 
-		Schema:          schema,
-		Paused:          paused,
-		Owner:           owner,
-		PendingOwner:    pendingOwner,
-		Burner:          burner,
-		Minter:          minter,
-		Pauser:          pauser,
-		BlockedChannels: blockedChannels,
+		schema:          schema,
+		paused:          paused,
+		owner:           owner,
+		pendingOwner:    pendingOwner,
+		burner:          burner,
+		minter:          minter,
+		pauser:          pauser,
+		blockedChannels: blockedChannels,
 		// Blocklist collections
-		BlocklistOwner:        blocklistOwner,
-		BlocklistPendingOwner: blocklistPendingOwner,
-		BlockedAddresses:      blockedAddresses,
+		blocklistOwner:        blocklistOwner,
+		blocklistPendingOwner: blocklistPendingOwner,
+		blockedAddresses:      blockedAddresses,
 	}
 }
 
@@ -147,7 +147,7 @@ func (k *Keeper) SendRestrictionFn(goCtx context.Context, fromAddr, toAddr sdk.A
 			return toAddr, nil
 		}
 
-		paused, err := k.Paused.Get(ctx)
+		paused, err := k.paused.Get(ctx)
 		if err != nil {
 			return toAddr, err
 		}

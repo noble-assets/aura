@@ -9,47 +9,47 @@ import (
 //
 
 func (k *Keeper) GetPaused(ctx sdk.Context) (bool, error) {
-	return k.Paused.Get(ctx)
+	return k.paused.Get(ctx)
 }
 
 func (k *Keeper) SetPaused(ctx sdk.Context, paused bool) error {
-	return k.Paused.Set(ctx, paused)
+	return k.paused.Set(ctx, paused)
 }
 
 //
 
 func (k *Keeper) GetOwner(ctx sdk.Context) (string, error) {
-	ownerBz, err := k.Owner.Get(ctx)
+	ownerBz, err := k.owner.Get(ctx)
 	return string(ownerBz), err
 }
 
 func (k *Keeper) SetOwner(ctx sdk.Context, owner string) error {
-	return k.Owner.Set(ctx, []byte(owner))
+	return k.owner.Set(ctx, []byte(owner))
 }
 
 //
 
 func (k *Keeper) DeletePendingOwner(ctx sdk.Context) error {
-	return k.PendingOwner.Remove(ctx)
+	return k.pendingOwner.Remove(ctx)
 }
 
 func (k *Keeper) GetPendingOwner(ctx sdk.Context) (string, error) {
-	ownerBz, err := k.PendingOwner.Get(ctx)
+	ownerBz, err := k.pendingOwner.Get(ctx)
 	return string(ownerBz), err
 }
 
 func (k *Keeper) SetPendingOwner(ctx sdk.Context, pendingOwner string) error {
-	return k.PendingOwner.Set(ctx, []byte(pendingOwner))
+	return k.pendingOwner.Set(ctx, []byte(pendingOwner))
 }
 
 //
 
 func (k *Keeper) DeleteBurner(ctx sdk.Context, burner string) error {
-	return k.Burner.Remove(ctx, []byte(burner))
+	return k.burner.Remove(ctx, []byte(burner))
 }
 
 func (k *Keeper) GetBurner(ctx sdk.Context, burner string) (allowance math.Int, err error) {
-	bz, err := k.Burner.Get(ctx, []byte(burner))
+	bz, err := k.burner.Get(ctx, []byte(burner))
 	if err != nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (k *Keeper) GetBurner(ctx sdk.Context, burner string) (allowance math.Int, 
 }
 
 func (k *Keeper) GetBurners(ctx sdk.Context) (burners []types.Burner, err error) {
-	err = k.Burner.Walk(ctx, nil, func(burnerAddr []byte, allowanceBz []byte) (bool, error) {
+	err = k.burner.Walk(ctx, nil, func(burnerAddr []byte, allowanceBz []byte) (bool, error) {
 		var allowance math.Int
 		err = allowance.Unmarshal(allowanceBz)
 
@@ -73,7 +73,7 @@ func (k *Keeper) GetBurners(ctx sdk.Context) (burners []types.Burner, err error)
 }
 
 func (k *Keeper) HasBurner(ctx sdk.Context, burner string) (bool, error) {
-	return k.Burner.Has(ctx, []byte(burner))
+	return k.burner.Has(ctx, []byte(burner))
 }
 
 func (k *Keeper) SetBurner(ctx sdk.Context, burner string, allowance math.Int) error {
@@ -81,17 +81,17 @@ func (k *Keeper) SetBurner(ctx sdk.Context, burner string, allowance math.Int) e
 	if err != nil {
 		return err
 	}
-	return k.Burner.Set(ctx, []byte(burner), bz)
+	return k.burner.Set(ctx, []byte(burner), bz)
 }
 
 //
 
 func (k *Keeper) DeleteMinter(ctx sdk.Context, minter string) error {
-	return k.Minter.Remove(ctx, []byte(minter))
+	return k.minter.Remove(ctx, []byte(minter))
 }
 
 func (k *Keeper) GetMinter(ctx sdk.Context, minter string) (allowance math.Int, err error) {
-	allowanceBz, err := k.Minter.Get(ctx, []byte(minter))
+	allowanceBz, err := k.minter.Get(ctx, []byte(minter))
 	if err != nil {
 		return
 	}
@@ -100,7 +100,7 @@ func (k *Keeper) GetMinter(ctx sdk.Context, minter string) (allowance math.Int, 
 }
 
 func (k *Keeper) GetMinters(ctx sdk.Context) (minters []types.Minter, err error) {
-	err = k.Minter.Walk(ctx, nil, func(minterAddr []byte, allowanceBz []byte) (bool, error) {
+	err = k.minter.Walk(ctx, nil, func(minterAddr []byte, allowanceBz []byte) (bool, error) {
 		var allowance math.Int
 		err = allowance.Unmarshal(allowanceBz)
 
@@ -115,22 +115,22 @@ func (k *Keeper) GetMinters(ctx sdk.Context) (minters []types.Minter, err error)
 }
 
 func (k *Keeper) HasMinter(ctx sdk.Context, minter string) (bool, error) {
-	return k.Minter.Has(ctx, []byte(minter))
+	return k.minter.Has(ctx, []byte(minter))
 }
 
 func (k *Keeper) SetMinter(ctx sdk.Context, minter string, allowance math.Int) error {
 	bz, _ := allowance.Marshal()
-	return k.Minter.Set(ctx, []byte(minter), bz)
+	return k.minter.Set(ctx, []byte(minter), bz)
 }
 
 //
 
 func (k *Keeper) DeletePauser(ctx sdk.Context, pauser string) error {
-	return k.Pauser.Remove(ctx, []byte(pauser))
+	return k.pauser.Remove(ctx, []byte(pauser))
 }
 
 func (k *Keeper) GetPausers(ctx sdk.Context) (pausers []string, err error) {
-	err = k.Pauser.Walk(ctx, nil, func(pauser []byte) (bool, error) {
+	err = k.pauser.Walk(ctx, nil, func(pauser []byte) (bool, error) {
 		pausers = append(pausers, string(pauser))
 		return false, nil
 	})
@@ -139,21 +139,21 @@ func (k *Keeper) GetPausers(ctx sdk.Context) (pausers []string, err error) {
 }
 
 func (k *Keeper) HasPauser(ctx sdk.Context, pauser string) (bool, error) {
-	return k.Pauser.Has(ctx, []byte(pauser))
+	return k.pauser.Has(ctx, []byte(pauser))
 }
 
 func (k *Keeper) SetPauser(ctx sdk.Context, pauser string) error {
-	return k.Pauser.Set(ctx, []byte(pauser))
+	return k.pauser.Set(ctx, []byte(pauser))
 }
 
 //
 
 func (k *Keeper) DeleteBlockedChannel(ctx sdk.Context, channel string) error {
-	return k.BlockedChannels.Remove(ctx, []byte(channel))
+	return k.blockedChannels.Remove(ctx, []byte(channel))
 }
 
 func (k *Keeper) GetBlockedChannels(ctx sdk.Context) (channels []string, err error) {
-	err = k.BlockedChannels.Walk(ctx, nil, func(channel []byte) (bool, error) {
+	err = k.blockedChannels.Walk(ctx, nil, func(channel []byte) (bool, error) {
 		channels = append(channels, string(channel))
 		return false, nil
 	})
@@ -161,9 +161,9 @@ func (k *Keeper) GetBlockedChannels(ctx sdk.Context) (channels []string, err err
 }
 
 func (k *Keeper) HasBlockedChannel(ctx sdk.Context, channel string) (bool, error) {
-	return k.BlockedChannels.Has(ctx, []byte(channel))
+	return k.blockedChannels.Has(ctx, []byte(channel))
 }
 
 func (k *Keeper) SetBlockedChannel(ctx sdk.Context, channel string) error {
-	return k.BlockedChannels.Set(ctx, []byte(channel))
+	return k.blockedChannels.Set(ctx, []byte(channel))
 }
