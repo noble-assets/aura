@@ -7,35 +7,35 @@ import (
 //
 
 func (k *Keeper) GetBlocklistOwner(ctx sdk.Context) (string, error) {
-	return k.BlocklistOwner.Get(ctx)
+	return k.blocklistOwner.Get(ctx)
 }
 
 func (k *Keeper) SetBlocklistOwner(ctx sdk.Context, owner string) error {
-	return k.BlocklistOwner.Set(ctx, owner)
+	return k.blocklistOwner.Set(ctx, owner)
 }
 
 //
 
 func (k *Keeper) DeleteBlocklistPendingOwner(ctx sdk.Context) error {
-	return k.BlocklistPendingOwner.Remove(ctx)
+	return k.blocklistPendingOwner.Remove(ctx)
 }
 
 func (k *Keeper) GetBlocklistPendingOwner(ctx sdk.Context) (string, error) {
-	return k.BlocklistPendingOwner.Get(ctx)
+	return k.blocklistPendingOwner.Get(ctx)
 }
 
 func (k *Keeper) SetBlocklistPendingOwner(ctx sdk.Context, pendingOwner string) error {
-	return k.BlocklistPendingOwner.Set(ctx, pendingOwner)
+	return k.blocklistPendingOwner.Set(ctx, pendingOwner)
 }
 
 //
 
 func (k *Keeper) DeleteBlockedAddress(ctx sdk.Context, address []byte) error {
-	return k.BlockedAddresses.Remove(ctx, address)
+	return k.blockedAddresses.Remove(ctx, address)
 }
 
 func (k *Keeper) GetBlockedAddresses(ctx sdk.Context) (addresses []string, err error) {
-	err = k.BlockedAddresses.Walk(ctx, nil, func(address []byte) (bool, error) {
+	err = k.blockedAddresses.Walk(ctx, nil, func(address []byte) (bool, error) {
 		addresses = append(addresses, sdk.AccAddress(address).String())
 		return false, nil
 	})
@@ -43,9 +43,9 @@ func (k *Keeper) GetBlockedAddresses(ctx sdk.Context) (addresses []string, err e
 }
 
 func (k *Keeper) HasBlockedAddress(ctx sdk.Context, address []byte) (bool, error) {
-	return k.BlockedAddresses.Has(ctx, address)
+	return k.blockedAddresses.Has(ctx, address)
 }
 
 func (k *Keeper) SetBlockedAddress(ctx sdk.Context, address []byte) error {
-	return k.BlockedAddresses.Set(ctx, address)
+	return k.blockedAddresses.Set(ctx, address)
 }
