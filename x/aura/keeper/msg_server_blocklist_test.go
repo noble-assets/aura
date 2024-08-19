@@ -50,7 +50,9 @@ func TestBlocklistTransferOwnership(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and set a pending owner in state.
 	require.NoError(t, err)
-	require.Equal(t, pendingOwner.Address, k.GetBlocklistPendingOwner(ctx))
+	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pendingOwner.Address, blocklistPendingOwner)
 }
 
 func TestBlocklistAcceptOwnership(t *testing.T) {
@@ -80,8 +82,12 @@ func TestBlocklistAcceptOwnership(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and updated the owner in state.
 	require.NoError(t, err)
-	require.Equal(t, pendingOwner.Address, k.GetBlocklistOwner(ctx))
-	require.Empty(t, k.GetBlocklistPendingOwner(ctx))
+	blocklistOwner, err := k.GetBlocklistOwner(ctx)
+	require.NoError(t, err)
+	require.Equal(t, pendingOwner.Address, blocklistOwner)
+	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
+	require.NoError(t, err)
+	require.Empty(t, blocklistPendingOwner)
 }
 
 func TestAddToBlocklist(t *testing.T) {
@@ -123,7 +129,9 @@ func TestAddToBlocklist(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and blocked the user in state.
 	require.NoError(t, err)
-	require.True(t, k.HasBlockedAddress(ctx, user.Bytes))
+	hasBlockedAddress, err := k.HasBlockedAddress(ctx, user.Bytes)
+	require.NoError(t, err)
+	require.True(t, hasBlockedAddress)
 }
 
 func TestRemoveFromBlocklist(t *testing.T) {
@@ -165,11 +173,15 @@ func TestRemoveFromBlocklist(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and the user shouldn't be blocked.
 	require.NoError(t, err)
-	require.False(t, k.HasBlockedAddress(ctx, user.Bytes))
+	hasBlockedAddress, err := k.HasBlockedAddress(ctx, user.Bytes)
+	require.NoError(t, err)
+	require.False(t, hasBlockedAddress)
 
 	// ARRANGE: Set user as blocked in state.
 	k.SetBlockedAddress(ctx, user.Bytes)
-	require.True(t, k.HasBlockedAddress(ctx, user.Bytes))
+	hasBlockedAddress, err = k.HasBlockedAddress(ctx, user.Bytes)
+	require.NoError(t, err)
+	require.True(t, hasBlockedAddress)
 
 	// ACT: Attempt to remove from blocklist.
 	_, err = server.RemoveFromBlocklist(goCtx, &blocklist.MsgRemoveFromBlocklist{
@@ -178,5 +190,7 @@ func TestRemoveFromBlocklist(t *testing.T) {
 	})
 	// ASSERT: The action should've succeeded, and unblocked the user.
 	require.NoError(t, err)
-	require.False(t, k.HasBlockedAddress(ctx, user.Bytes))
+	hasBlockedAddress, err = k.HasBlockedAddress(ctx, user.Bytes)
+	require.NoError(t, err)
+	require.False(t, hasBlockedAddress)
 }

@@ -12,7 +12,9 @@ func TestGetBlockedAddresses(t *testing.T) {
 	keeper, ctx := mocks.AuraKeeper(t)
 
 	// ACT: Retrieve all blocked addresses with no state.
-	addresses := keeper.GetBlockedAddresses(ctx)
+	addresses, err := keeper.GetBlockedAddresses(ctx)
+	// ASSERT: No error returned.
+	require.NoError(t, err)
 	// ASSERT: No addresses returned.
 	require.Empty(t, addresses)
 
@@ -22,7 +24,9 @@ func TestGetBlockedAddresses(t *testing.T) {
 	keeper.SetBlockedAddress(ctx, user2.Bytes)
 
 	// ACT: Retrieve all blocked addresses.
-	addresses = keeper.GetBlockedAddresses(ctx)
+	addresses, err = keeper.GetBlockedAddresses(ctx)
+	// ASSERT: No error returned.
+	require.NoError(t, err)
 	// ASSERT: Addresses returned.
 	require.Len(t, addresses, 2)
 	require.Contains(t, addresses, user1.Address)

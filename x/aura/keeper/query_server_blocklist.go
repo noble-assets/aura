@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorstypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -28,10 +29,15 @@ func (k blocklistQueryServer) Owner(goCtx context.Context, req *blocklist.QueryO
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	blocklistOwner, err := k.GetBlocklistOwner(ctx)
+	if err != nil {
+		return nil, err
+	}
+	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
 	return &blocklist.QueryOwnerResponse{
-		Owner:        k.GetBlocklistOwner(ctx),
-		PendingOwner: k.GetBlocklistPendingOwner(ctx),
-	}, nil
+		Owner:        blocklistOwner,
+		PendingOwner: blocklistPendingOwner,
+	}, err
 }
 
 func (k blocklistQueryServer) Addresses(goCtx context.Context, req *blocklist.QueryAddresses) (*blocklist.QueryAddressesResponse, error) {
@@ -40,10 +46,10 @@ func (k blocklistQueryServer) Addresses(goCtx context.Context, req *blocklist.Qu
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	store := prefix.NewStore(ctx.KVStore(k.storeKey), blocklist.BlockedAddressPrefix)
-
+	store := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	blocklistStore := prefix.NewStore(store, blocklist.BlockedAddressPrefix)
 	var addresses []string
-	pagination, err := query.Paginate(store, req.Pagination, func(key []byte, _ []byte) error {
+	pagination, err := query.Paginate(blocklistStore, req.Pagination, func(key []byte, _ []byte) error {
 		addresses = append(addresses, sdk.AccAddress(key).String())
 		return nil
 	})
@@ -66,6 +72,6 @@ func (k blocklistQueryServer) Address(goCtx context.Context, req *blocklist.Quer
 		return nil, errors.Wrapf(err, "unable to decode address %s", req.Address)
 	}
 
-	blocked := k.HasBlockedAddress(ctx, address)
-	return &blocklist.QueryAddressResponse{Blocked: blocked}, nil
+	blocked, err := k.HasBlockedAddress(ctx, address)
+	return &blocklist.QueryAddressResponse{Blocked: blocked}, err
 }

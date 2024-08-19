@@ -227,7 +227,7 @@ func NewSimApp(
 	)
 
 	app.AuraKeeper = aurakeeper.NewKeeper(
-		appCodec, keys[auratypes.ModuleName], "ausdy", nil,
+		appCodec, runtime.NewKVStoreService(keys[auratypes.ModuleName]), "ausdy", nil,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
