@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package aura.v1;
 
-import "aura/blocklist/v1/genesis.proto";
-import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
+import "aura/blocklist/v1/genesis.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types";
 
@@ -37,9 +37,9 @@ message GenesisState {
 message Burner {
   string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 2 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -47,9 +47,9 @@ message Burner {
 message Minter {
   string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 2 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }

@@ -3,9 +3,9 @@ syntax = "proto3";
 package aura.blocklist.v1;
 
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "google/api/annotations.proto";
-import "cosmos_proto/cosmos.proto";
 import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist";
 
