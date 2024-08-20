@@ -67,7 +67,8 @@ func TestOwnerQuery(t *testing.T) {
 
 	// ARRANGE: Set owner in state.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to query owner with state.
 	res, err := server.Owner(goCtx, &types.QueryOwner{})
