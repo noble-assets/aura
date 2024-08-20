@@ -3,6 +3,8 @@ syntax = "proto3";
 package aura.v1;
 
 import "aura/v1/genesis.proto";
+import "cosmos/query/v1/query.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos_proto/cosmos.proto";

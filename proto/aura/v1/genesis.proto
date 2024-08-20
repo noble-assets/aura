@@ -2,7 +2,9 @@ syntax = "proto3";
 
 package aura.v1;
 
+import "amino/amino.proto";
 import "aura/blocklist/v1/genesis.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";

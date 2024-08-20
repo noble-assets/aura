@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package aura.blocklist.v1;
 
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 import "cosmos/msg/v1/msg.proto";
@@ -23,7 +25,6 @@ service Msg {
 message MsgTransferOwnership {
   option (cosmos.msg.v1.signer) = "signer";
   option (amino.name)           = "aura/blocklist/TransferOwnership";
-  
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -67,7 +68,6 @@ message MsgAddToBlocklistResponse {}
 message MsgRemoveFromBlocklist {
   option (cosmos.msg.v1.signer) = "signer";
   option (amino.name)           = "aura/blocklist/RemoveFromBlocklist";
-  
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 

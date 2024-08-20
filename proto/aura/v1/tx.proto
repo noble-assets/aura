@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package aura.v1;
 
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
@@ -255,6 +258,7 @@ message MsgAddBlockedChannel {
   option (cosmos.msg.v1.signer) = "signer";
   option (amino.name)           = "aura/AddBlockedChannel";
 
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -267,6 +271,7 @@ message MsgAddBlockedChannelResponse {}
 message MsgRemoveBlockedChannel {
   option (cosmos.msg.v1.signer) = "signer";
   option (amino.name)           = "aura/RemoveBlockedChannel";
+
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
