@@ -22,10 +22,7 @@ func (k blocklistMsgServer) TransferOwnership(goCtx context.Context, msg *blockl
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetBlocklistOwner(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get blocklist owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, blocklist.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -36,7 +33,10 @@ func (k blocklistMsgServer) TransferOwnership(goCtx context.Context, msg *blockl
 		return nil, blocklist.ErrSameOwner
 	}
 
-	k.SetBlocklistPendingOwner(ctx, msg.NewOwner)
+	err = k.SetBlocklistPendingOwner(ctx, msg.NewOwner)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to set blocklist pending owner")
+	}
 
 	return &blocklist.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&blocklist.OwnershipTransferStarted{
 		PreviousOwner: owner,
@@ -48,10 +48,7 @@ func (k blocklistMsgServer) AcceptOwnership(goCtx context.Context, msg *blocklis
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	pendingOwner, err := k.GetBlocklistPendingOwner(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get blocklist pending owner")
-	}
-	if pendingOwner == "" {
+	if err != nil || pendingOwner == "" {
 		return nil, blocklist.ErrNoPendingOwner
 	}
 	if msg.Signer != pendingOwner {
@@ -62,8 +59,14 @@ func (k blocklistMsgServer) AcceptOwnership(goCtx context.Context, msg *blocklis
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get blocklist owner")
 	}
-	k.SetBlocklistOwner(ctx, msg.Signer)
-	k.DeleteBlocklistPendingOwner(ctx)
+	err = k.SetBlocklistOwner(ctx, msg.Signer)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to set blocklist owner")
+	}
+	err = k.DeleteBlocklistPendingOwner(ctx)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to delete blocklist pending owner")
+	}
 
 	return &blocklist.MsgAcceptOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&blocklist.OwnershipTransferred{
 		PreviousOwner: owner,
@@ -75,10 +78,7 @@ func (k blocklistMsgServer) AddToBlocklist(goCtx context.Context, msg *blocklist
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetBlocklistOwner(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get blocklist owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, blocklist.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -91,7 +91,10 @@ func (k blocklistMsgServer) AddToBlocklist(goCtx context.Context, msg *blocklist
 			return nil, errors.Wrapf(err, "unable to decode account address %s", account)
 		}
 
-		k.SetBlockedAddress(ctx, address)
+		err = k.SetBlockedAddress(ctx, address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to set blocked address %s", account)
+		}
 	}
 
 	return &blocklist.MsgAddToBlocklistResponse{}, ctx.EventManager().EmitTypedEvent(&blocklist.BlockedAddressesAdded{
@@ -103,10 +106,7 @@ func (k blocklistMsgServer) RemoveFromBlocklist(goCtx context.Context, msg *bloc
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetBlocklistOwner(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get blocklist owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, blocklist.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -119,7 +119,10 @@ func (k blocklistMsgServer) RemoveFromBlocklist(goCtx context.Context, msg *bloc
 			return nil, errors.Wrapf(err, "unable to decode account address %s", account)
 		}
 
-		k.DeleteBlockedAddress(ctx, address)
+		err = k.DeleteBlockedAddress(ctx, address)
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to delete blocked address %s", account)
+		}
 	}
 
 	return &blocklist.MsgRemoveFromBlocklistResponse{}, ctx.EventManager().EmitTypedEvent(&blocklist.BlockedAddressesRemoved{

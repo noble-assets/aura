@@ -258,12 +258,13 @@ func TestSendRestrictionIBCTransfer(t *testing.T) {
 	coins := sdk.NewCoins(sdk.NewCoin(keeper.Denom, ONE))
 
 	// ARRANGE: Set a blocked channel in state.
-	keeper.SetBlockedChannel(ctx, "channel-0")
+	err := keeper.SetBlockedChannel(ctx, "channel-0")
+	require.NoError(t, err)
 	escrow := transfertypes.GetEscrowAddress(transfertypes.PortID, "channel-0")
 
 	// ACT: Attempt to transfer from user to escrow account.
 	// This is to mimic the underlying transfer that occurs when using IBC.
-	_, err := keeper.SendRestrictionFn(ctx, user.Bytes, escrow, coins)
+	_, err = keeper.SendRestrictionFn(ctx, user.Bytes, escrow, coins)
 
 	// ASSERT: The action should've failed due to blocked channel.
 	require.ErrorContains(t, err, "transfers are blocked")
