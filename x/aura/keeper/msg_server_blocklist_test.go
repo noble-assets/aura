@@ -67,7 +67,8 @@ func TestBlocklistAcceptOwnership(t *testing.T) {
 
 	// ARRANGE: Set blocklist pending owner in state.
 	pendingOwner := utils.TestAccount()
-	k.SetBlocklistPendingOwner(ctx, pendingOwner.Address)
+	err = k.SetBlocklistPendingOwner(ctx, pendingOwner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to accept ownership with invalid signer.
 	_, err = server.AcceptOwnership(goCtx, &blocklist.MsgAcceptOwnership{

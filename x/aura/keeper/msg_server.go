@@ -25,17 +25,11 @@ func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBu
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	hasBurner, err := k.HasBurner(ctx, msg.Signer)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a burner", msg.Signer)
-	}
-	if !hasBurner {
+	if err != nil || !hasBurner {
 		return nil, types.ErrInvalidBurner
 	}
 	allowance, err := k.GetBurner(ctx, msg.Signer)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get burner %s allowance", msg.Signer)
-	}
-	if allowance.LT(msg.Amount) {
+	if err != nil || allowance.LT(msg.Amount) {
 		return nil, sdkerrors.Wrapf(types.ErrInsufficientAllowance, "burner %s has an allowance of %s", msg.Signer, allowance.String())
 	}
 
@@ -58,27 +52,21 @@ func (k msgServer) Burn(goCtx context.Context, msg *types.MsgBurn) (*types.MsgBu
 		return nil, sdkerrors.Wrapf(err, "unable to burn from module")
 	}
 
-	k.SetBurner(ctx, msg.Signer, allowance.Sub(msg.Amount))
+	err = k.SetBurner(ctx, msg.Signer, allowance.Sub(msg.Amount))
 
 	// NOTE: The bank module emits an event for us.
-	return &types.MsgBurnResponse{}, nil
+	return &types.MsgBurnResponse{}, err
 }
 
 func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMintResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	hasMinter, err := k.HasMinter(ctx, msg.Signer)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a minter", msg.Signer)
-	}
-	if !hasMinter {
+	if err != nil || !hasMinter {
 		return nil, types.ErrInvalidMinter
 	}
 	allowance, err := k.GetMinter(ctx, msg.Signer)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get minter %s allowance", msg.Signer)
-	}
-	if allowance.LT(msg.Amount) {
+	if err != nil || allowance.LT(msg.Amount) {
 		return nil, sdkerrors.Wrapf(types.ErrInsufficientAllowance, "minter %s has an allowance of %s", msg.Signer, allowance.String())
 	}
 
@@ -101,31 +89,28 @@ func (k msgServer) Mint(goCtx context.Context, msg *types.MsgMint) (*types.MsgMi
 		return nil, sdkerrors.Wrapf(err, "unable to transfer from module to user")
 	}
 
-	k.SetMinter(ctx, msg.Signer, allowance.Sub(msg.Amount))
+	err = k.SetMinter(ctx, msg.Signer, allowance.Sub(msg.Amount))
 
 	// NOTE: The bank module emits an event for us.
-	return &types.MsgMintResponse{}, nil
+	return &types.MsgMintResponse{}, err
 }
 
 func (k msgServer) Pause(goCtx context.Context, msg *types.MsgPause) (*types.MsgPauseResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	hasPauser, err := k.HasPauser(ctx, msg.Signer)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a pauser", msg.Signer)
-	}
-	if !hasPauser {
+	if err != nil || !hasPauser {
 		return nil, types.ErrInvalidPauser
 	}
 	paused, err := k.GetPaused(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if module is paused")
-	}
-	if paused {
+	if err != nil || paused {
 		return nil, errors.New("module is already paused")
 	}
 
-	k.SetPaused(ctx, true)
+	err = k.SetPaused(ctx, true)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "unable to pause module")
+	}
 
 	return &types.MsgPauseResponse{}, ctx.EventManager().EmitTypedEvent(&types.Paused{
 		Account: msg.Signer,
@@ -136,10 +121,7 @@ func (k msgServer) Unpause(goCtx context.Context, msg *types.MsgUnpause) (*types
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -147,14 +129,11 @@ func (k msgServer) Unpause(goCtx context.Context, msg *types.MsgUnpause) (*types
 	}
 
 	paused, err := k.GetPaused(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if module is paused")
-	}
-	if !paused {
+	if err != nil || !paused {
 		return nil, errors.New("module is already unpaused")
 	}
 
-	k.SetPaused(ctx, false)
+	err = k.SetPaused(ctx, false)
 
 	return &types.MsgUnpauseResponse{}, ctx.EventManager().EmitTypedEvent(&types.Unpaused{
 		Account: msg.Signer,
@@ -165,10 +144,7 @@ func (k msgServer) TransferOwnership(goCtx context.Context, msg *types.MsgTransf
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -179,8 +155,10 @@ func (k msgServer) TransferOwnership(goCtx context.Context, msg *types.MsgTransf
 		return nil, types.ErrSameOwner
 	}
 
-	k.SetPendingOwner(ctx, msg.NewOwner)
-
+	err = k.SetPendingOwner(ctx, msg.NewOwner)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set pending owner")
+	}
 	return &types.MsgTransferOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&types.OwnershipTransferStarted{
 		PreviousOwner: owner,
 		NewOwner:      msg.NewOwner,
@@ -191,10 +169,7 @@ func (k msgServer) AcceptOwnership(goCtx context.Context, msg *types.MsgAcceptOw
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	pendingOwner, err := k.GetPendingOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get pending owner")
-	}
-	if pendingOwner == "" {
+	if err != nil || pendingOwner == "" {
 		return nil, types.ErrNoPendingOwner
 	}
 	if msg.Signer != pendingOwner {
@@ -206,8 +181,14 @@ func (k msgServer) AcceptOwnership(goCtx context.Context, msg *types.MsgAcceptOw
 		return nil, sdkerrors.Wrapf(err, "unable to get owner")
 	}
 
-	k.SetOwner(ctx, msg.Signer)
-	k.DeletePendingOwner(ctx)
+	err = k.SetOwner(ctx, msg.Signer)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set owner")
+	}
+	err = k.DeletePendingOwner(ctx)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to delete pending owner")
+	}
 
 	return &types.MsgAcceptOwnershipResponse{}, ctx.EventManager().EmitTypedEvent(&types.OwnershipTransferred{
 		PreviousOwner: owner,
@@ -219,10 +200,7 @@ func (k msgServer) AddBurner(goCtx context.Context, msg *types.MsgAddBurner) (*t
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -230,10 +208,7 @@ func (k msgServer) AddBurner(goCtx context.Context, msg *types.MsgAddBurner) (*t
 	}
 
 	hasBurner, err := k.HasBurner(ctx, msg.Burner)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a burner", msg.Burner)
-	}
-	if hasBurner {
+	if err != nil || hasBurner {
 		return nil, fmt.Errorf("%s is already a burner", msg.Burner)
 	}
 
@@ -241,7 +216,10 @@ func (k msgServer) AddBurner(goCtx context.Context, msg *types.MsgAddBurner) (*t
 		return nil, errors.New("allowance cannot be negative")
 	}
 
-	k.SetBurner(ctx, msg.Burner, msg.Allowance)
+	err = k.SetBurner(ctx, msg.Burner, msg.Allowance)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set burner")
+	}
 
 	return &types.MsgAddBurnerResponse{}, ctx.EventManager().EmitTypedEvent(&types.BurnerAdded{
 		Address:   msg.Burner,
@@ -253,10 +231,7 @@ func (k msgServer) RemoveBurner(goCtx context.Context, msg *types.MsgRemoveBurne
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -264,14 +239,14 @@ func (k msgServer) RemoveBurner(goCtx context.Context, msg *types.MsgRemoveBurne
 	}
 
 	hasBurner, err := k.HasBurner(ctx, msg.Burner)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a burner", msg.Burner)
-	}
-	if !hasBurner {
+	if err != nil || !hasBurner {
 		return nil, fmt.Errorf("%s is not a burner", msg.Burner)
 	}
 
-	k.DeleteBurner(ctx, msg.Burner)
+	err = k.DeleteBurner(ctx, msg.Burner)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to delete burner")
+	}
 
 	return &types.MsgRemoveBurnerResponse{}, ctx.EventManager().EmitTypedEvent(&types.BurnerRemoved{
 		Address: msg.Burner,
@@ -282,10 +257,7 @@ func (k msgServer) SetBurnerAllowance(goCtx context.Context, msg *types.MsgSetBu
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -293,10 +265,7 @@ func (k msgServer) SetBurnerAllowance(goCtx context.Context, msg *types.MsgSetBu
 	}
 
 	hasBurner, err := k.HasBurner(ctx, msg.Burner)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a burner", msg.Burner)
-	}
-	if !hasBurner {
+	if err != nil || !hasBurner {
 		return nil, fmt.Errorf("%s is not a burner", msg.Burner)
 	}
 
@@ -308,7 +277,10 @@ func (k msgServer) SetBurnerAllowance(goCtx context.Context, msg *types.MsgSetBu
 	if err != nil {
 		return nil, sdkerrors.Wrapf(err, "unable to get burner %s allowance", msg.Burner)
 	}
-	k.SetBurner(ctx, msg.Burner, msg.Allowance)
+	err = k.SetBurner(ctx, msg.Burner, msg.Allowance)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set burner")
+	}
 
 	return &types.MsgSetBurnerAllowanceResponse{}, ctx.EventManager().EmitTypedEvent(&types.BurnerUpdated{
 		Address:           msg.Burner,
@@ -321,10 +293,7 @@ func (k msgServer) AddMinter(goCtx context.Context, msg *types.MsgAddMinter) (*t
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -332,10 +301,7 @@ func (k msgServer) AddMinter(goCtx context.Context, msg *types.MsgAddMinter) (*t
 	}
 
 	hasMinter, err := k.HasMinter(ctx, msg.Minter)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a minter", msg.Minter)
-	}
-	if hasMinter {
+	if err != nil || hasMinter {
 		return nil, fmt.Errorf("%s is already a minter", msg.Minter)
 	}
 
@@ -343,7 +309,10 @@ func (k msgServer) AddMinter(goCtx context.Context, msg *types.MsgAddMinter) (*t
 		return nil, errors.New("allowance cannot be negative")
 	}
 
-	k.SetMinter(ctx, msg.Minter, msg.Allowance)
+	err = k.SetMinter(ctx, msg.Minter, msg.Allowance)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set minter")
+	}
 
 	return &types.MsgAddMinterResponse{}, ctx.EventManager().EmitTypedEvent(&types.MinterAdded{
 		Address:   msg.Minter,
@@ -355,10 +324,7 @@ func (k msgServer) RemoveMinter(goCtx context.Context, msg *types.MsgRemoveMinte
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -366,14 +332,14 @@ func (k msgServer) RemoveMinter(goCtx context.Context, msg *types.MsgRemoveMinte
 	}
 
 	hasMinter, err := k.HasMinter(ctx, msg.Minter)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a minter", msg.Minter)
-	}
-	if !hasMinter {
+	if err != nil || !hasMinter {
 		return nil, fmt.Errorf("%s is not a minter", msg.Minter)
 	}
 
-	k.DeleteMinter(ctx, msg.Minter)
+	err = k.DeleteMinter(ctx, msg.Minter)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to delete minter")
+	}
 
 	return &types.MsgRemoveMinterResponse{}, ctx.EventManager().EmitTypedEvent(&types.MinterRemoved{
 		Address: msg.Minter,
@@ -384,10 +350,7 @@ func (k msgServer) SetMinterAllowance(goCtx context.Context, msg *types.MsgSetMi
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -395,10 +358,7 @@ func (k msgServer) SetMinterAllowance(goCtx context.Context, msg *types.MsgSetMi
 	}
 
 	hasMinter, err := k.HasMinter(ctx, msg.Minter)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a minter", msg.Minter)
-	}
-	if !hasMinter {
+	if err != nil || !hasMinter {
 		return nil, fmt.Errorf("%s is not a minter", msg.Minter)
 	}
 
@@ -410,7 +370,10 @@ func (k msgServer) SetMinterAllowance(goCtx context.Context, msg *types.MsgSetMi
 	if err != nil {
 		return nil, sdkerrors.Wrapf(err, "unable to get minter %s allowance", msg.Minter)
 	}
-	k.SetMinter(ctx, msg.Minter, msg.Allowance)
+	err = k.SetMinter(ctx, msg.Minter, msg.Allowance)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set minter")
+	}
 
 	return &types.MsgSetMinterAllowanceResponse{}, ctx.EventManager().EmitTypedEvent(&types.MinterUpdated{
 		Address:           msg.Minter,
@@ -423,10 +386,7 @@ func (k msgServer) AddPauser(goCtx context.Context, msg *types.MsgAddPauser) (*t
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -434,14 +394,14 @@ func (k msgServer) AddPauser(goCtx context.Context, msg *types.MsgAddPauser) (*t
 	}
 
 	hasPauser, err := k.HasPauser(ctx, msg.Pauser)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a pauser", msg.Pauser)
-	}
-	if hasPauser {
+	if err != nil || hasPauser {
 		return nil, fmt.Errorf("%s is already a pauser", msg.Pauser)
 	}
 
-	k.SetPauser(ctx, msg.Pauser)
+	err = k.SetPauser(ctx, msg.Pauser)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set pauser")
+	}
 
 	return &types.MsgAddPauserResponse{}, ctx.EventManager().EmitTypedEvent(&types.PauserAdded{
 		Address: msg.Pauser,
@@ -452,10 +412,7 @@ func (k msgServer) RemovePauser(goCtx context.Context, msg *types.MsgRemovePause
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -463,14 +420,14 @@ func (k msgServer) RemovePauser(goCtx context.Context, msg *types.MsgRemovePause
 	}
 
 	hasPauser, err := k.HasPauser(ctx, msg.Pauser)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is a pauser", msg.Pauser)
-	}
-	if !hasPauser {
+	if err != nil || !hasPauser {
 		return nil, fmt.Errorf("%s is not a pauser", msg.Pauser)
 	}
 
-	k.DeletePauser(ctx, msg.Pauser)
+	err = k.DeletePauser(ctx, msg.Pauser)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to delete pauser")
+	}
 
 	return &types.MsgRemovePauserResponse{}, ctx.EventManager().EmitTypedEvent(&types.PauserRemoved{
 		Address: msg.Pauser,
@@ -481,10 +438,7 @@ func (k msgServer) AddBlockedChannel(goCtx context.Context, msg *types.MsgAddBlo
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -492,14 +446,14 @@ func (k msgServer) AddBlockedChannel(goCtx context.Context, msg *types.MsgAddBlo
 	}
 
 	hasBlockedChannel, err := k.HasBlockedChannel(ctx, msg.Channel)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is blocked", msg.Channel)
-	}
-	if hasBlockedChannel {
+	if err != nil || hasBlockedChannel {
 		return nil, fmt.Errorf("%s is already blocked", msg.Channel)
 	}
 
-	k.SetBlockedChannel(ctx, msg.Channel)
+	err = k.SetBlockedChannel(ctx, msg.Channel)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to set blocked channel")
+	}
 
 	return &types.MsgAddBlockedChannelResponse{}, ctx.EventManager().EmitTypedEvent(&types.BlockedChannelAdded{
 		Channel: msg.Channel,
@@ -510,10 +464,7 @@ func (k msgServer) RemoveBlockedChannel(goCtx context.Context, msg *types.MsgRem
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
-	if owner == "" {
+	if err != nil || owner == "" {
 		return nil, types.ErrNoOwner
 	}
 	if msg.Signer != owner {
@@ -521,14 +472,14 @@ func (k msgServer) RemoveBlockedChannel(goCtx context.Context, msg *types.MsgRem
 	}
 
 	hasBlockedChannel, err := k.HasBlockedChannel(ctx, msg.Channel)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to check if %s is blocked", msg.Channel)
-	}
-	if !hasBlockedChannel {
+	if err != nil || !hasBlockedChannel {
 		return nil, fmt.Errorf("%s is not blocked", msg.Channel)
 	}
 
-	k.DeleteBlockedChannel(ctx, msg.Channel)
+	err = k.DeleteBlockedChannel(ctx, msg.Channel)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(err, "failed to delete blocked channel")
+	}
 
 	return &types.MsgRemoveBlockedChannelResponse{}, ctx.EventManager().EmitTypedEvent(&types.BlockedChannelRemoved{
 		Channel: msg.Channel,

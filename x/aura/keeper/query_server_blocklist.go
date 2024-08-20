@@ -34,10 +34,13 @@ func (k blocklistQueryServer) Owner(goCtx context.Context, req *blocklist.QueryO
 		return nil, err
 	}
 	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return &blocklist.QueryOwnerResponse{
 		Owner:        blocklistOwner,
 		PendingOwner: blocklistPendingOwner,
-	}, err
+	}, nil
 }
 
 func (k blocklistQueryServer) Addresses(goCtx context.Context, req *blocklist.QueryAddresses) (*blocklist.QueryAddressesResponse, error) {
@@ -53,11 +56,13 @@ func (k blocklistQueryServer) Addresses(goCtx context.Context, req *blocklist.Qu
 		addresses = append(addresses, sdk.AccAddress(key).String())
 		return nil
 	})
-
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to paginate blocked addresses")
+	}
 	return &blocklist.QueryAddressesResponse{
 		Addresses:  addresses,
 		Pagination: pagination,
-	}, err
+	}, nil
 }
 
 func (k blocklistQueryServer) Address(goCtx context.Context, req *blocklist.QueryAddress) (*blocklist.QueryAddressResponse, error) {
@@ -73,5 +78,8 @@ func (k blocklistQueryServer) Address(goCtx context.Context, req *blocklist.Quer
 	}
 
 	blocked, err := k.HasBlockedAddress(ctx, address)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to check blocked address %s", req.Address)
+	}
 	return &blocklist.QueryAddressResponse{Blocked: blocked}, err
 }
