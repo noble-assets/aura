@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package aura.v1;
 
-import "gogoproto/gogo.proto";
+import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "amino/amino.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types";
 
@@ -38,7 +38,7 @@ service Msg {
 
 message MsgBurn {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/Burn";
+  option (amino.name) = "aura/Burn";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -46,9 +46,9 @@ message MsgBurn {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string from = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -57,7 +57,7 @@ message MsgBurnResponse {}
 
 message MsgMint {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/Mint";
+  option (amino.name) = "aura/Mint";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -65,9 +65,9 @@ message MsgMint {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string to = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string amount = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -76,7 +76,7 @@ message MsgMintResponse {}
 
 message MsgPause {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/Pause";
+  option (amino.name) = "aura/Pause";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -88,7 +88,7 @@ message MsgPauseResponse {}
 
 message MsgUnpause {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/Unpause";
+  option (amino.name) = "aura/Unpause";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -100,7 +100,7 @@ message MsgUnpauseResponse {}
 
 message MsgTransferOwnership {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/TransferOwnership";
+  option (amino.name) = "aura/TransferOwnership";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -113,7 +113,7 @@ message MsgTransferOwnershipResponse {}
 
 message MsgAcceptOwnership {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/AcceptOwnership";
+  option (amino.name) = "aura/AcceptOwnership";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -125,7 +125,7 @@ message MsgAcceptOwnershipResponse {}
 
 message MsgAddBurner {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/AddBurner";
+  option (amino.name) = "aura/AddBurner";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -133,9 +133,9 @@ message MsgAddBurner {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string burner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -144,7 +144,7 @@ message MsgAddBurnerResponse {}
 
 message MsgRemoveBurner {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/RemoveBurner";
+  option (amino.name) = "aura/RemoveBurner";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -157,7 +157,7 @@ message MsgRemoveBurnerResponse {}
 
 message MsgSetBurnerAllowance {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/SetBurnerAllowance";
+  option (amino.name) = "aura/SetBurnerAllowance";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -165,9 +165,9 @@ message MsgSetBurnerAllowance {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string burner = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -176,7 +176,7 @@ message MsgSetBurnerAllowanceResponse {}
 
 message MsgAddMinter {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/AddMinter";
+  option (amino.name) = "aura/AddMinter";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -184,9 +184,9 @@ message MsgAddMinter {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string minter = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -195,7 +195,7 @@ message MsgAddMinterResponse {}
 
 message MsgRemoveMinter {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/RemoveMinter";
+  option (amino.name) = "aura/RemoveMinter";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -208,7 +208,7 @@ message MsgRemoveMinterResponse {}
 
 message MsgSetMinterAllowance {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/SetMinterAllowance";
+  option (amino.name) = "aura/SetMinterAllowance";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -216,9 +216,9 @@ message MsgSetMinterAllowance {
   string signer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string minter = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 3 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -227,7 +227,7 @@ message MsgSetMinterAllowanceResponse {}
 
 message MsgAddPauser {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/AddPauser";
+  option (amino.name) = "aura/AddPauser";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -240,7 +240,7 @@ message MsgAddPauserResponse {}
 
 message MsgRemovePauser {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/RemovePauser";
+  option (amino.name) = "aura/RemovePauser";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -253,7 +253,7 @@ message MsgRemovePauserResponse {}
 
 message MsgAddBlockedChannel {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/AddBlockedChannel";
+  option (amino.name) = "aura/AddBlockedChannel";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -266,7 +266,7 @@ message MsgAddBlockedChannelResponse {}
 
 message MsgRemoveBlockedChannel {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/RemoveBlockedChannel";
+  option (amino.name) = "aura/RemoveBlockedChannel";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;

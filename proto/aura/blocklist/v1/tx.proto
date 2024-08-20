@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package aura.blocklist.v1;
 
-import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/msg/v1/msg.proto";
 import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist";
 
@@ -22,8 +21,8 @@ service Msg {
 // MsgTransferOwnership implements the transferOwnership (0xf2fde38b) method.
 message MsgTransferOwnership {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/blocklist/TransferOwnership";
-  
+  option (amino.name) = "aura/blocklist/TransferOwnership";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
@@ -37,7 +36,7 @@ message MsgTransferOwnershipResponse {}
 // MsgAcceptOwnership implements the acceptOwnership (0x79ba5097) method.
 message MsgAcceptOwnership {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/blocklist/AcceptOwnership";
+  option (amino.name) = "aura/blocklist/AcceptOwnership";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -51,7 +50,7 @@ message MsgAcceptOwnershipResponse {}
 // MsgAddToBlocklist implements the addToBlocklist (0xf71a55f8) method.
 message MsgAddToBlocklist {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/blocklist/AddToBlocklist";
+  option (amino.name) = "aura/blocklist/AddToBlocklist";
 
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
@@ -66,8 +65,8 @@ message MsgAddToBlocklistResponse {}
 // MsgRemoveFromBlocklist implements the removeFromBlocklist (0xab63e69c) method.
 message MsgRemoveFromBlocklist {
   option (cosmos.msg.v1.signer) = "signer";
-  option (amino.name)           = "aura/blocklist/RemoveFromBlocklist";
-  
+  option (amino.name) = "aura/blocklist/RemoveFromBlocklist";
+
   option (gogoproto.equal) = false;
   option (gogoproto.goproto_getters) = false;
 
