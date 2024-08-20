@@ -5,9 +5,6 @@ package aura.blocklist.v1;
 import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "gogoproto/gogo.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/msg/v1/msg.proto";
-import "amino/amino.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist";
 

@@ -6,8 +6,6 @@ import "cosmos/base/query/v1beta1/pagination.proto";
 import "cosmos/query/v1/query.proto";
 import "cosmos_proto/cosmos.proto";
 import "google/api/annotations.proto";
-import "cosmos_proto/cosmos.proto";
-import "cosmos/query/v1/query.proto";
 
 option go_package = "github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist";
 
