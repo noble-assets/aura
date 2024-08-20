@@ -87,7 +87,7 @@ func TestBlocklistAcceptOwnership(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, pendingOwner.Address, blocklistOwner)
 	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.Empty(t, blocklistPendingOwner)
 }
 
