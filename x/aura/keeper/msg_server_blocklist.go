@@ -55,10 +55,9 @@ func (k blocklistMsgServer) AcceptOwnership(goCtx context.Context, msg *blocklis
 		return nil, errors.Wrapf(blocklist.ErrInvalidPendingOwner, "expected %s, got %s", pendingOwner, msg.Signer)
 	}
 
-	owner, err := k.GetBlocklistOwner(ctx)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get blocklist owner")
-	}
+	// We dont need to check the error as this value is used just for events
+	owner, _ := k.GetBlocklistOwner(ctx)
+
 	err = k.SetBlocklistOwner(ctx, msg.Signer)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to set blocklist owner")

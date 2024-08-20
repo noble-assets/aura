@@ -102,10 +102,11 @@ func TestMint(t *testing.T) {
 
 	// ARRANGE: Set minter in state, with enough allowance for a single mint.
 	minter := utils.TestAccount()
-	k.SetMinter(ctx, minter.Address, ONE)
+	err := k.SetMinter(ctx, minter.Address, ONE)
+	require.NoError(t, err)
 
 	// ACT: Attempt to mint with invalid signer.
-	_, err := server.Mint(goCtx, &types.MsgMint{
+	_, err = server.Mint(goCtx, &types.MsgMint{
 		Signer: utils.TestAccount().Address,
 	})
 	// ASSERT: The action should've failed due to invalid signer.
@@ -122,7 +123,8 @@ func TestMint(t *testing.T) {
 
 	// ARRANGE: Generate a user account and add to blocklist.
 	user := utils.TestAccount()
-	k.SetBlockedAddress(ctx, user.Bytes)
+	err = k.SetBlockedAddress(ctx, user.Bytes)
+	require.NoError(t, err)
 
 	// ACT: Attempt to mint to blocked address.
 	_, err = server.Mint(goCtx, &types.MsgMint{
@@ -185,7 +187,7 @@ func TestPause(t *testing.T) {
 	// ASSERT: The action should've failed due to invalid signer.
 	require.ErrorContains(t, err, types.ErrInvalidPauser.Error())
 	paused, err := k.GetPaused(ctx)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.False(t, paused)
 
 	// ACT: Attempt to pause.
@@ -215,10 +217,11 @@ func TestUnpause(t *testing.T) {
 	server := keeper.NewMsgServer(k)
 
 	// ARRANGE: Set paused state to true.
-	k.SetPaused(ctx, true)
+	err := k.SetPaused(ctx, true)
+	require.NoError(t, err)
 
 	// ACT: Attempt to unpause with no owner set.
-	_, err := server.Unpause(goCtx, &types.MsgUnpause{})
+	_, err = server.Unpause(goCtx, &types.MsgUnpause{})
 	// ASSERT: The action should've failed due to no owner set.
 	require.ErrorContains(t, err, "there is no owner")
 	paused, err := k.GetPaused(ctx)
@@ -227,7 +230,8 @@ func TestUnpause(t *testing.T) {
 
 	// ARRANGE: Set owner in state.
 	owner := utils.TestAccount()
-	k.SetOwner(ctx, owner.Address)
+	err = k.SetOwner(ctx, owner.Address)
+	require.NoError(t, err)
 
 	// ACT: Attempt to unpause with invalid signer.
 	_, err = server.Unpause(goCtx, &types.MsgUnpause{
