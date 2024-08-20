@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	storetypes "cosmossdk.io/store/types"
@@ -39,7 +40,8 @@ func (k *Keeper) SetBankKeeper(bankKeeper types.BankKeeper) {
 }
 
 // SendRestrictionFn executes necessary checks against all USDY transfers.
-func (k *Keeper) SendRestrictionFn(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) (newToAddr sdk.AccAddress, err error) {
+func (k *Keeper) SendRestrictionFn(goCtx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) (newToAddr sdk.AccAddress, err error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	if amount := amt.AmountOf(k.Denom); !amount.IsZero() {
 		burning := !fromAddr.Equals(types.ModuleAddress) && toAddr.Equals(types.ModuleAddress)
 		if burning {

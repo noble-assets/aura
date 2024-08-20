@@ -236,8 +236,9 @@ func NewSimApp(
 		app.ModuleAccountAddrs(),
 		authorityAddress,
 		logger,
-	) //.WithSendCoinsRestriction(app.AuraKeeper.SendRestrictionFn)
-	//app.AuraKeeper.SetBankKeeper(app.BankKeeper)
+	)
+	app.BankKeeper.AppendSendRestriction(app.AuraKeeper.SendRestrictionFn)
+	app.AuraKeeper.SetBankKeeper(app.BankKeeper)
 
 	app.StakingKeeper = *stakingkeeper.NewKeeper(
 		appCodec,
