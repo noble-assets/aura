@@ -37,9 +37,9 @@ message GenesisState {
 message Burner {
   string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 2 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
@@ -47,9 +47,9 @@ message Burner {
 message Minter {
   string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   string allowance = 2 [
-    (cosmos_proto.scalar)  = "cosmos.Int",
+    (cosmos_proto.scalar) = "cosmos.Int",
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable)   = false,
+    (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
