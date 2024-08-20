@@ -31,7 +31,8 @@ lint:
 ###                                Protobuf                                 ###
 ###############################################################################
 
-BUF_VERSION=1.32
+BUF_VERSION=1.37
+BUILDER_VERSION=0.15.0
 
 proto-all: proto-format proto-lint proto-gen
 
@@ -44,7 +45,7 @@ proto-format:
 proto-gen:
 	@echo "🤖 Generating code from protobuf..."
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
-		aura-proto sh ./proto/generate.sh
+		ghcr.io/cosmos/proto-builder:$(BUILDER_VERSION) sh ./proto/generate.sh
 	@echo "✅ Completed code generation!"
 
 proto-lint:
@@ -52,11 +53,6 @@ proto-lint:
 	@docker run --rm --volume "$(PWD)":/workspace --workdir /workspace \
 		bufbuild/buf:$(BUF_VERSION) lint
 	@echo "✅ Completed protobuf linting!"
-
-proto-setup:
-	@echo "🤖 Setting up protobuf environment..."
-	@docker build --rm --tag aura-proto:latest --file proto/Dockerfile .
-	@echo "✅ Setup protobuf environment!"
 
 ###############################################################################
 ###                                 Testing                                 ###
