@@ -33,10 +33,8 @@ func (k blocklistQueryServer) Owner(goCtx context.Context, req *blocklist.QueryO
 	if err != nil {
 		return nil, err
 	}
-	blocklistPendingOwner, err := k.GetBlocklistPendingOwner(ctx)
-	if err != nil {
-		return nil, err
-	}
+	// Ignore the error in case pending owner is not available
+	blocklistPendingOwner, _ := k.GetBlocklistPendingOwner(ctx)
 	return &blocklist.QueryOwnerResponse{
 		Owner:        blocklistOwner,
 		PendingOwner: blocklistPendingOwner,

@@ -33,10 +33,8 @@ func (k queryServer) Paused(goCtx context.Context, req *types.QueryPaused) (*typ
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	paused, err := k.GetPaused(ctx)
-	if err != nil {
-		return nil, err
-	}
+	// Ignore if the paused state is not set, in that case it is considered unpaused
+	paused, _ := k.GetPaused(ctx)
 	return &types.QueryPausedResponse{Paused: paused}, nil
 }
 
@@ -51,10 +49,8 @@ func (k queryServer) Owner(goCtx context.Context, req *types.QueryOwner) (*types
 	if err != nil {
 		return nil, err
 	}
-	pendingOwner, err := k.GetPendingOwner(ctx)
-	if err != nil {
-		return nil, err
-	}
+	// Ignore the error in case pending owner is not available
+	pendingOwner, _ := k.GetPendingOwner(ctx)
 	return &types.QueryOwnerResponse{
 		Owner:        owner,
 		PendingOwner: pendingOwner,
