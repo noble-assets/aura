@@ -102,8 +102,10 @@ func (k msgServer) Pause(goCtx context.Context, msg *types.MsgPause) (*types.Msg
 	if err != nil || !hasPauser {
 		return nil, types.ErrInvalidPauser
 	}
-	paused, err := k.GetPaused(ctx)
-	if err != nil || paused {
+
+	// Ignore if the paused state is not set, in that case it is considered unpaused
+	paused, _ := k.GetPaused(ctx)
+	if paused {
 		return nil, errors.New("module is already paused")
 	}
 
@@ -176,10 +178,8 @@ func (k msgServer) AcceptOwnership(goCtx context.Context, msg *types.MsgAcceptOw
 		return nil, sdkerrors.Wrapf(types.ErrInvalidPendingOwner, "expected %s, got %s", pendingOwner, msg.Signer)
 	}
 
-	owner, err := k.GetOwner(ctx)
-	if err != nil {
-		return nil, sdkerrors.Wrapf(err, "unable to get owner")
-	}
+	// Ignore the error if the owner is not set, as this is  just used for event
+	owner, _ := k.GetOwner(ctx)
 
 	err = k.SetOwner(ctx, msg.Signer)
 	if err != nil {

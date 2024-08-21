@@ -339,7 +339,7 @@ func TestAcceptOwnership(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, pendingOwner.Address, getowner)
 	getpendingowner, err := k.GetPendingOwner(ctx)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.Empty(t, getpendingowner)
 }
 
