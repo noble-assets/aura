@@ -321,8 +321,9 @@ func NewSimApp(
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 
+	app.mm.SetOrderPreBlockers(upgradetypes.ModuleName)
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName, capabilitytypes.ModuleName, stakingtypes.ModuleName,
+		capabilitytypes.ModuleName, stakingtypes.ModuleName,
 		ibcexported.ModuleName, transfertypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
 		genutiltypes.ModuleName, paramstypes.ModuleName, auratypes.ModuleName,
 	)
