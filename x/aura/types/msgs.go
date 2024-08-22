@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
-	channeltypes "github.com/cosmos/ibc-go/v4/modules/core/04-channel/types"
+	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 )
 
 //
 
-var _ legacytx.LegacyMsg = &MsgBurn{}
+var _ sdk.Msg = &MsgBurn{}
 
 func (msg *MsgBurn) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -39,7 +38,7 @@ func (*MsgBurn) Type() string { return "aura/Burn" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgMint{}
+var _ sdk.Msg = &MsgMint{}
 
 func (msg *MsgMint) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -68,7 +67,7 @@ func (*MsgMint) Type() string { return "aura/Mint" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgPause{}
+var _ sdk.Msg = &MsgPause{}
 
 func (msg *MsgPause) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -93,7 +92,7 @@ func (*MsgPause) Type() string { return "aura/Pause" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgUnpause{}
+var _ sdk.Msg = &MsgUnpause{}
 
 func (msg *MsgUnpause) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -118,7 +117,7 @@ func (*MsgUnpause) Type() string { return "aura/Unpause" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgTransferOwnership{}
+var _ sdk.Msg = &MsgTransferOwnership{}
 
 func (msg *MsgTransferOwnership) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -147,7 +146,7 @@ func (*MsgTransferOwnership) Type() string { return "aura/TransferOwnership" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAcceptOwnership{}
+var _ sdk.Msg = &MsgAcceptOwnership{}
 
 func (msg *MsgAcceptOwnership) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -172,7 +171,7 @@ func (*MsgAcceptOwnership) Type() string { return "aura/AcceptOwnership" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAddBurner{}
+var _ sdk.Msg = &MsgAddBurner{}
 
 func (msg *MsgAddBurner) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -201,7 +200,7 @@ func (*MsgAddBurner) Type() string { return "aura/AddBurner" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgRemoveBurner{}
+var _ sdk.Msg = &MsgRemoveBurner{}
 
 func (msg *MsgRemoveBurner) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -230,7 +229,7 @@ func (*MsgRemoveBurner) Type() string { return "aura/RemoveBurner" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgSetBurnerAllowance{}
+var _ sdk.Msg = &MsgSetBurnerAllowance{}
 
 func (msg *MsgSetBurnerAllowance) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -259,7 +258,7 @@ func (*MsgSetBurnerAllowance) Type() string { return "aura/SetBurnerAllowance" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAddMinter{}
+var _ sdk.Msg = &MsgAddMinter{}
 
 func (msg *MsgAddMinter) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -288,7 +287,7 @@ func (*MsgAddMinter) Type() string { return "aura/AddMinter" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgRemoveMinter{}
+var _ sdk.Msg = &MsgRemoveMinter{}
 
 func (msg *MsgRemoveMinter) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -317,7 +316,7 @@ func (*MsgRemoveMinter) Type() string { return "aura/RemoveMinter" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgSetMinterAllowance{}
+var _ sdk.Msg = &MsgSetMinterAllowance{}
 
 func (msg *MsgSetMinterAllowance) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -346,7 +345,7 @@ func (*MsgSetMinterAllowance) Type() string { return "aura/SetMinterAllowance" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAddPauser{}
+var _ sdk.Msg = &MsgAddPauser{}
 
 func (msg *MsgAddPauser) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -375,7 +374,7 @@ func (*MsgAddPauser) Type() string { return "aura/AddPauser" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgRemovePauser{}
+var _ sdk.Msg = &MsgRemovePauser{}
 
 func (msg *MsgRemovePauser) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -404,7 +403,7 @@ func (*MsgRemovePauser) Type() string { return "aura/RemovePauser" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgAddBlockedChannel{}
+var _ sdk.Msg = &MsgAddBlockedChannel{}
 
 func (msg *MsgAddBlockedChannel) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {
@@ -433,7 +432,7 @@ func (*MsgAddBlockedChannel) Type() string { return "aura/AddBlockedChannel" }
 
 //
 
-var _ legacytx.LegacyMsg = &MsgRemoveBlockedChannel{}
+var _ sdk.Msg = &MsgRemoveBlockedChannel{}
 
 func (msg *MsgRemoveBlockedChannel) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(msg.Signer); err != nil {

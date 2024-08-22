@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	transfertypes "github.com/cosmos/ibc-go/v4/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/ondoprotocol/usdy-noble/utils"
 	"github.com/ondoprotocol/usdy-noble/utils/mocks"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
