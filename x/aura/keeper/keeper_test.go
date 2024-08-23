@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/ondoprotocol/usdy-noble/utils"
@@ -152,7 +153,7 @@ func TestSendRestrictionTransfer(t *testing.T) {
 			paused:           true,
 			senderBlocked:    true,
 			recipientBlocked: true,
-			coins:            sdk.NewCoins(sdk.NewCoin("uusdc", sdk.NewInt(1_000_000))),
+			coins:            sdk.NewCoins(sdk.NewCoin("uusdc", math.NewInt(1_000_000))),
 			err:              nil,
 		},
 		{

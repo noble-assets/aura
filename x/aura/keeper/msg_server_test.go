@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ondoprotocol/usdy-noble/utils"
 	"github.com/ondoprotocol/usdy-noble/utils/mocks"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var ONE = sdk.NewInt(1_000_000_000_000_000_000)
+var ONE = math.NewInt(1_000_000_000_000_000_000)
 
 func TestBurn(t *testing.T) {
 	bank := mocks.BankKeeper{
@@ -447,7 +448,7 @@ func TestSetBurnerAllowance(t *testing.T) {
 	require.ErrorContains(t, err, "is not a burner")
 
 	// ARRANGE: Set burner in state.
-	k.SetBurner(ctx, burner.Address, sdk.ZeroInt())
+	k.SetBurner(ctx, burner.Address, math.ZeroInt())
 
 	// ACT: Attempt to set burner allowance with invalid allowance.
 	_, err = server.SetBurnerAllowance(goCtx, &types.MsgSetBurnerAllowance{
@@ -602,7 +603,7 @@ func TestSetMinterAllowance(t *testing.T) {
 	require.ErrorContains(t, err, "is not a minter")
 
 	// ARRANGE: Set minters in state.
-	k.SetMinter(ctx, minter.Address, sdk.ZeroInt())
+	k.SetMinter(ctx, minter.Address, math.ZeroInt())
 
 	// ACT: Attempt to set minter allowance with invalid allowance.
 	_, err = server.SetMinterAllowance(goCtx, &types.MsgSetMinterAllowance{

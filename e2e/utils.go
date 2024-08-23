@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/jsonpb"
 	_ "github.com/ondoprotocol/usdy-noble/x/aura"
@@ -64,7 +65,7 @@ func Suite(t *testing.T, wrapper *Wrapper, ibcEnabled bool) (ctx context.Context
 				GasAdjustment:  5,
 				TrustingPeriod: "504h",
 				NoHostMount:    false,
-				PreGenesis: func(cfg ibc.ChainConfig) (err error) {
+				PreGenesis: func(cfg ibc.Chain) (err error) {
 					validator := wrapper.chain.Validators[0]
 					ONE := sdk.NewCoins(sdk.NewInt64Coin("ustake", 1_000_000))
 
@@ -116,7 +117,7 @@ func Suite(t *testing.T, wrapper *Wrapper, ibcEnabled bool) (ctx context.Context
 					return nil
 				},
 				ModifyGenesis: func(cfg ibc.ChainConfig, bz []byte) ([]byte, error) {
-					ONE := sdk.NewInt(1_000_000_000_000_000_000)
+					ONE := math.NewInt(1_000_000_000_000_000_000)
 
 					changes := []cosmos.GenesisKV{
 						{Key: "app_state.aura.blocklist_state.owner", Value: wrapper.owner.FormattedAddress()},
@@ -131,7 +132,7 @@ func Suite(t *testing.T, wrapper *Wrapper, ibcEnabled bool) (ctx context.Context
 
 					return cosmos.ModifyGenesis(changes)(cfg, bz)
 				},
-				ModifyGenesisAmounts: func() (sdk.Coin, sdk.Coin) {
+				ModifyGenesisAmounts: func(int) (sdk.Coin, sdk.Coin) {
 					ONE := sdk.NewInt64Coin("ustake", 1_000_000)
 					return ONE, ONE
 				},
@@ -145,9 +146,9 @@ func Suite(t *testing.T, wrapper *Wrapper, ibcEnabled bool) (ctx context.Context
 			NumValidators: &numValidators,
 			NumFullNodes:  &numFullNodes,
 			ChainConfig: ibc.ChainConfig{
-				PreGenesis: func(cfg ibc.ChainConfig) (err error) {
+				PreGenesis: func(cfg ibc.Chain) (err error) {
 					validator := wrapper.gaia.Validators[0]
-					ONE := sdk.NewCoins(sdk.NewInt64Coin(cfg.Denom, 1_000_000))
+					ONE := sdk.NewCoins(sdk.NewInt64Coin(cfg.Config().Denom, 1_000_000))
 
 					wrapper.charlie, err = wrapper.gaia.BuildWallet(ctx, "owner", "")
 					if err != nil {
@@ -223,7 +224,7 @@ func EnsureBlocked(t *testing.T, wrapper Wrapper, ctx context.Context, address s
 	require.True(t, res.Blocked)
 }
 
-func EnsureBurner(t *testing.T, wrapper Wrapper, ctx context.Context, address string, allowance sdk.Int) {
+func EnsureBurner(t *testing.T, wrapper Wrapper, ctx context.Context, address string, allowance math.Int) {
 	validator := wrapper.chain.Validators[0]
 
 	raw, _, err := validator.ExecQuery(ctx, "aura", "burners")
@@ -235,7 +236,7 @@ func EnsureBurner(t *testing.T, wrapper Wrapper, ctx context.Context, address st
 	require.Contains(t, res.Burners, types.Burner{Address: address, Allowance: allowance})
 }
 
-func EnsureMinter(t *testing.T, wrapper Wrapper, ctx context.Context, address string, allowance sdk.Int) {
+func EnsureMinter(t *testing.T, wrapper Wrapper, ctx context.Context, address string, allowance math.Int) {
 	validator := wrapper.chain.Validators[0]
 
 	raw, _, err := validator.ExecQuery(ctx, "aura", "minters")

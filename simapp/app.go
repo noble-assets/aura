@@ -7,25 +7,25 @@ import (
 	"os"
 	"path/filepath"
 
-	"cosmossdk.io/store/streaming"
+	"cosmossdk.io/log"
+	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/tx/signing"
 	"cosmossdk.io/x/upgrade"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/log"
 	tmos "github.com/cometbft/cometbft/libs/os"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/cmtservice"
 	nodeservice "github.com/cosmos/cosmos-sdk/client/grpc/node"
-	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
+	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -35,13 +35,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
+	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 	"github.com/cosmos/cosmos-sdk/x/params"
@@ -59,7 +64,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v8/modules/core"
 	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	host "github.com/cosmos/ibc-go/v8/modules/core/24-host"
+	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	"github.com/ondoprotocol/usdy-noble/x/aura"
@@ -105,19 +110,22 @@ type SimApp struct {
 	legacyAmino       *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry codectypes.InterfaceRegistry
+	txConfig          client.TxConfig
 
-	mm           *module.Manager
-	configurator module.Configurator
-	keys         map[string]*sdk.KVStoreKey
-	mkeys        map[string]*sdk.MemoryStoreKey
-	tkeys        map[string]*sdk.TransientStoreKey
+	mm                 *module.Manager
+	BasicModuleManager module.BasicManager
+	configurator       module.Configurator
+	keys               map[string]*storetypes.KVStoreKey
+	mkeys              map[string]*storetypes.MemoryStoreKey
+	tkeys              map[string]*storetypes.TransientStoreKey
 
 	// Cosmos SDK Modules
-	AccountKeeper authkeeper.AccountKeeper
-	BankKeeper    bankkeeper.Keeper
-	ParamsKeeper  paramskeeper.Keeper
-	StakingKeeper stakingkeeper.Keeper
-	UpgradeKeeper upgradekeeper.Keeper
+	AccountKeeper         authkeeper.AccountKeeper
+	BankKeeper            bankkeeper.Keeper
+	ParamsKeeper          paramskeeper.Keeper
+	StakingKeeper         stakingkeeper.Keeper
+	UpgradeKeeper         upgradekeeper.Keeper
+	ConsensusParamsKeeper consensusparamkeeper.Keeper
 	// IBC Modules
 	CapabilityKeeper *capabilitykeeper.Keeper
 	IBCKeeper        *ibckeeper.Keeper
@@ -174,15 +182,15 @@ func NewSimApp(
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
-	keys := sdk.NewKVStoreKeys(
+	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, paramstypes.StoreKey, stakingtypes.StoreKey,
-		upgradetypes.ModuleName, capabilitytypes.StoreKey, host.StoreKey, transfertypes.StoreKey,
+		upgradetypes.ModuleName, capabilitytypes.StoreKey, ibcexported.StoreKey, transfertypes.StoreKey,
 		auratypes.ModuleName,
 	)
-	mkeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+	mkeys := storetypes.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
+	tkeys := storetypes.NewTransientStoreKeys(paramstypes.TStoreKey)
 
-	if _, _, err := streaming.LoadStreamingServices(bApp, appOpts, appCodec, keys); err != nil {
+	if err := bApp.RegisterStreamingServices(appOpts, keys); err != nil {
 		fmt.Printf("failed to load state streaming: %s", err)
 		os.Exit(1)
 	}
@@ -192,86 +200,144 @@ func NewSimApp(
 		legacyAmino:       legacyAmino,
 		appCodec:          appCodec,
 		interfaceRegistry: interfaceRegistry,
+		txConfig:          txConfig,
 		keys:              keys,
 		mkeys:             mkeys,
 		tkeys:             tkeys,
 	}
+	authorityAddress := ""
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
-	bApp.SetParamStore(app.ParamsKeeper.Subspace(baseapp.Paramspace).WithKeyTable(paramskeeper.ConsensusParamsKeyTable()))
-
+	// set the BaseApp's parameter store
+	app.ConsensusParamsKeeper = consensusparamkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[consensusparamtypes.StoreKey]),
+		authorityAddress,
+		runtime.EventService{},
+	)
+	app.SetParamStore(app.ConsensusParamsKeeper.ParamsStore)
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
-		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, permissions,
+		appCodec,
+		runtime.NewKVStoreService(keys[authtypes.StoreKey]),
+		authtypes.ProtoBaseAccount,
+		permissions,
+		authcodec.NewBech32Codec(sdk.Bech32MainPrefix),
+		sdk.Bech32MainPrefix,
+		authorityAddress,
 	)
 
 	app.AuraKeeper = aurakeeper.NewKeeper(
 		appCodec, keys[auratypes.ModuleName], "ausdy", nil,
 	)
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
-	).WithSendCoinsRestriction(app.AuraKeeper.SendRestrictionFn)
+		appCodec,
+		runtime.NewKVStoreService(keys[banktypes.StoreKey]),
+		app.AccountKeeper,
+		app.ModuleAccountAddrs(),
+		authorityAddress,
+		logger,
+	)
+	app.BankKeeper.AppendSendRestriction(app.AuraKeeper.SendRestrictionFn)
 	app.AuraKeeper.SetBankKeeper(app.BankKeeper)
 
-	app.StakingKeeper = stakingkeeper.NewKeeper(
-		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
+	app.StakingKeeper = *stakingkeeper.NewKeeper(
+		appCodec,
+		runtime.NewKVStoreService(keys[stakingtypes.StoreKey]),
+		app.AccountKeeper,
+		app.BankKeeper,
+		authorityAddress,
+		authcodec.NewBech32Codec(sdk.Bech32PrefixValAddr),
+		authcodec.NewBech32Codec(sdk.Bech32PrefixConsAddr),
 	)
 
-	app.UpgradeKeeper = upgradekeeper.NewKeeper(
-		make(map[int64]bool), keys[upgradetypes.StoreKey], appCodec, DefaultNodeHome, app.BaseApp,
+	app.UpgradeKeeper = *upgradekeeper.NewKeeper(
+		make(map[int64]bool),
+		runtime.NewKVStoreService(keys[upgradetypes.StoreKey]),
+		appCodec,
+		DefaultNodeHome,
+		app.BaseApp,
+		authorityAddress,
 	)
 
 	app.CapabilityKeeper = capabilitykeeper.NewKeeper(
-		appCodec, keys[capabilitytypes.StoreKey], mkeys[capabilitytypes.MemStoreKey],
+		appCodec,
+		keys[capabilitytypes.StoreKey],
+		mkeys[capabilitytypes.MemStoreKey],
 	)
 
-	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(host.ModuleName)
+	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibcexported.ModuleName)
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[host.StoreKey], app.GetSubspace(host.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec,
+		keys[ibcexported.StoreKey],
+		app.GetSubspace(ibcexported.ModuleName),
+		app.StakingKeeper,
+		app.UpgradeKeeper,
+		scopedIBCKeeper,
+		authorityAddress,
 	)
 
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(transfertypes.ModuleName)
 	app.TransferKeeper = transferkeeper.NewKeeper(
-		appCodec, keys[transfertypes.StoreKey], app.GetSubspace(transfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+		appCodec,
+		keys[transfertypes.StoreKey],
+		app.GetSubspace(transfertypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+		authorityAddress,
 	)
 
 	router := porttypes.NewRouter().AddRoute(transfertypes.ModuleName, transfer.NewIBCModule(app.TransferKeeper))
 	app.IBCKeeper.SetRouter(router)
 
 	app.mm = module.NewManager(
-		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
-		bank.NewAppModule(appCodec, app.BankKeeper.(bankkeeper.BaseKeeper), app.AccountKeeper),
+		auth.NewAppModule(appCodec, app.AccountKeeper, nil, app.GetSubspace(authtypes.ModuleName)),
+		bank.NewAppModule(appCodec, app.BankKeeper.(bankkeeper.BaseKeeper), app.AccountKeeper, app.GetSubspace(banktypes.ModuleName)),
 		genutil.NewAppModule(
-			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
-			encodingConfig.TxConfig,
+			app.AccountKeeper, app.StakingKeeper, app.BaseApp,
+			txConfig,
 		),
 		params.NewAppModule(app.ParamsKeeper),
-		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
-		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+		staking.NewAppModule(appCodec, &app.StakingKeeper, app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName)),
+		upgrade.NewAppModule(&app.UpgradeKeeper, app.AccountKeeper.AddressCodec()),
+		capability.NewAppModule(appCodec, *app.CapabilityKeeper, false),
 		ibc.NewAppModule(app.IBCKeeper),
 		transfer.NewAppModule(app.TransferKeeper),
 		aura.NewAppModule(app.AuraKeeper),
 	)
 
+	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
+	// non-dependant module elements, such as codec registration and genesis verification.
+	// By default it is composed of all the module from the module manager.
+	// Additionally, app module basics can be overwritten by passing them as argument.
+	app.BasicModuleManager = module.NewBasicManagerFromManager(
+		app.mm,
+		map[string]module.AppModuleBasic{
+			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+		})
+	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
+	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
+
+	app.mm.SetOrderPreBlockers(upgradetypes.ModuleName)
 	app.mm.SetOrderBeginBlockers(
-		upgradetypes.ModuleName, capabilitytypes.ModuleName, stakingtypes.ModuleName,
-		host.ModuleName, transfertypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
+		capabilitytypes.ModuleName, stakingtypes.ModuleName,
+		ibcexported.ModuleName, transfertypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
 		genutiltypes.ModuleName, paramstypes.ModuleName, auratypes.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
-		stakingtypes.ModuleName, host.ModuleName, transfertypes.ModuleName, capabilitytypes.ModuleName,
+		stakingtypes.ModuleName, ibcexported.ModuleName, transfertypes.ModuleName, capabilitytypes.ModuleName,
 		authtypes.ModuleName, banktypes.ModuleName, genutiltypes.ModuleName, paramstypes.ModuleName,
 		upgradetypes.ModuleName, auratypes.ModuleName,
 	)
 	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
-		stakingtypes.ModuleName, host.ModuleName, genutiltypes.ModuleName, transfertypes.ModuleName,
+		stakingtypes.ModuleName, ibcexported.ModuleName, genutiltypes.ModuleName, transfertypes.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, auratypes.ModuleName,
 	)
 
-	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
 
@@ -283,7 +349,7 @@ func NewSimApp(
 		ante.HandlerOptions{
 			AccountKeeper:   app.AccountKeeper,
 			BankKeeper:      app.BankKeeper,
-			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
+			SignModeHandler: txConfig.SignModeHandler(),
 			FeegrantKeeper:  nil,
 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 		},
@@ -291,9 +357,17 @@ func NewSimApp(
 	if err != nil {
 		panic(err)
 	}
+	postHandler, err := posthandler.NewPostHandler(
+		posthandler.HandlerOptions{},
+	)
+	if err != nil {
+		panic(err)
+	}
 
 	app.SetAnteHandler(anteHandler)
+	app.SetPostHandler(postHandler)
 	app.SetInitChainer(app.InitChainer)
+	app.SetPreBlocker(app.PreBlocker)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
 
@@ -310,19 +384,32 @@ func (app *SimApp) LegacyAmino() *codec.LegacyAmino {
 	return app.legacyAmino
 }
 
-func (app *SimApp) BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock {
-	return app.mm.BeginBlock(ctx, req)
+// PreBlocker application updates every pre block
+func (app *SimApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
+	return app.mm.PreBlock(ctx)
 }
 
-func (app *SimApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock {
-	return app.mm.EndBlock(ctx, req)
+// BeginBlocker application updates every begin block
+func (app *SimApp) BeginBlocker(ctx sdk.Context) (sdk.BeginBlock, error) {
+	return app.mm.BeginBlock(ctx)
 }
 
-func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+// EndBlocker application updates every end block
+func (app *SimApp) EndBlocker(ctx sdk.Context) (sdk.EndBlock, error) {
+	return app.mm.EndBlock(ctx)
+}
+
+func (a *SimApp) Configurator() module.Configurator {
+	return a.configurator
+}
+
+// InitChainer application update at chain initialization
+func (app *SimApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
 	var genesisState GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
 
@@ -345,12 +432,12 @@ func (app *SimApp) SimulationManager() *module.SimulationManager {
 
 func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, _ config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
-	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 	cmtservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	// Register node gRPC service for grpc-gateway.
+	nodeservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
-	ModuleBasics.RegisterRESTRoutes(clientCtx, apiSvr.Router)
-	ModuleBasics.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
+	app.BasicModuleManager.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 }
 
 func (app *SimApp) RegisterTxService(clientCtx client.Context) {
@@ -358,11 +445,17 @@ func (app *SimApp) RegisterTxService(clientCtx client.Context) {
 }
 
 func (app *SimApp) RegisterTendermintService(clientCtx client.Context) {
-	cmtservice.RegisterTendermintService(app.BaseApp.GRPCQueryRouter(), clientCtx, app.interfaceRegistry)
+	cmtApp := server.NewCometABCIWrapper(app)
+	cmtservice.RegisterTendermintService(
+		clientCtx,
+		app.BaseApp.GRPCQueryRouter(),
+		app.interfaceRegistry,
+		cmtApp.Query,
+	)
 }
 
-func (app *SimApp) RegisterNodeService(clientCtx client.Context) {
-	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter())
+func (app *SimApp) RegisterNodeService(clientCtx client.Context, cfg config.Config) {
+	nodeservice.RegisterNodeService(clientCtx, app.GRPCQueryRouter(), cfg)
 }
 
 func (app *SimApp) GetSubspace(moduleName string) paramstypes.Subspace {
@@ -370,14 +463,28 @@ func (app *SimApp) GetSubspace(moduleName string) paramstypes.Subspace {
 	return subspace
 }
 
-func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey sdk.StoreKey) paramskeeper.Keeper {
+func (app *SimApp) AppCodec() codec.Codec {
+	return app.appCodec
+}
+
+// InterfaceRegistry returns SimApp's InterfaceRegistry
+func (app *SimApp) InterfaceRegistry() types.InterfaceRegistry {
+	return app.interfaceRegistry
+}
+
+// TxConfig returns SimApp's TxConfig
+func (app *SimApp) TxConfig() client.TxConfig {
+	return app.txConfig
+}
+
+func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, key, tkey)
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(capabilitytypes.ModuleName)
-	paramsKeeper.Subspace(host.ModuleName)
+	paramsKeeper.Subspace(ibcexported.ModuleName)
 	paramsKeeper.Subspace(transfertypes.ModuleName)
 
 	return paramsKeeper
