@@ -147,10 +147,7 @@ func (k *Keeper) SendRestrictionFn(goCtx context.Context, fromAddr, toAddr sdk.A
 			return toAddr, nil
 		}
 
-		paused, err := k.paused.Get(ctx)
-		if err != nil {
-			return toAddr, err
-		}
+		paused, _ := k.paused.Get(ctx)
 		if paused {
 			return toAddr, fmt.Errorf("%s transfers are paused", k.Denom)
 		}
