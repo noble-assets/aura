@@ -6,6 +6,9 @@ on:
       - main
       - v*
   pull_request:
+    branches:
+      - main
+      - feat/sdk-eden
 
 jobs:
   test:
