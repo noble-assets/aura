@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"cosmossdk.io/core/appmodule"
+	"cosmossdk.io/core/store"
+	"cosmossdk.io/depinject"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -13,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	modulev1 "github.com/ondoprotocol/usdy-noble/api/aura/module/v1"
 	"github.com/ondoprotocol/usdy-noble/x/aura/client/cli"
 	"github.com/ondoprotocol/usdy-noble/x/aura/keeper"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
@@ -26,6 +30,7 @@ const ConsensusVersion = 1
 var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 	_ module.AppModule      = AppModule{}
+	_ appmodule.AppModule   = AppModule{}
 )
 
 //
@@ -118,3 +123,44 @@ func (m AppModule) RegisterServices(cfg module.Configurator) {
 }
 
 func (AppModule) ConsensusVersion() uint64 { return ConsensusVersion }
+
+//
+
+func init() {
+	appmodule.Register(&modulev1.Module{},
+		appmodule.Provide(ProvideModule),
+	)
+}
+
+type ModuleInputs struct {
+	depinject.In
+
+	Config *modulev1.Module
+
+	Cdc          codec.Codec
+	StoreService store.KVStoreService
+	BankKeeper   types.BankKeeper
+}
+
+type ModuleOutputs struct {
+	depinject.Out
+
+	Keeper *keeper.Keeper
+	Module appmodule.AppModule
+}
+
+func ProvideModule(in ModuleInputs) ModuleOutputs {
+	if in.Config.Denom == "" {
+		panic("denom for x/aura module must be set")
+	}
+
+	k := keeper.NewKeeper(
+		in.Cdc,
+		in.StoreService,
+		in.Config.Denom,
+		in.BankKeeper,
+	)
+	m := NewAppModule(k)
+
+	return ModuleOutputs{Keeper: k, Module: m}
+}
