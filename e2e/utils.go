@@ -142,7 +142,7 @@ func Suite(t *testing.T, wrapper *Wrapper, ibcEnabled bool) (ctx context.Context
 	if ibcEnabled {
 		specs = append(specs, &interchaintest.ChainSpec{
 			Name:          "ibc-go-simd",
-			Version:       "v4.5.0",
+			Version:       "v8.5.0",
 			NumValidators: &numValidators,
 			NumFullNodes:  &numFullNodes,
 			ChainConfig: ibc.ChainConfig{
