@@ -1,6 +1,6 @@
 module github.com/ondoprotocol/usdy-noble
 
-go 1.21
+go 1.22
 
 require (
 	cosmossdk.io/api v0.7.5
