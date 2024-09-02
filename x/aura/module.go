@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
-	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -17,20 +16,22 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	modulev1 "github.com/ondoprotocol/usdy-noble/api/aura/module/v1"
-	"github.com/ondoprotocol/usdy-noble/x/aura/client/cli"
 	"github.com/ondoprotocol/usdy-noble/x/aura/keeper"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types"
 	"github.com/ondoprotocol/usdy-noble/x/aura/types/blocklist"
-	"github.com/spf13/cobra"
 )
 
 // ConsensusVersion defines the current x/aura module consensus version.
 const ConsensusVersion = 1
 
 var (
-	_ module.AppModuleBasic = AppModuleBasic{}
-	_ module.AppModule      = AppModule{}
-	_ appmodule.AppModule   = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.HasConsensusVersion = AppModule{}
+	_ module.HasGenesis          = AppModule{}
+	_ module.HasServices         = AppModule{}
+
+	_ appmodule.AppModule = AppModule{}
 )
 
 //
@@ -76,10 +77,6 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 	}
 }
 
-func (AppModuleBasic) GetTxCmd() *cobra.Command { return cli.GetTxCmd() }
-
-func (AppModuleBasic) GetQueryCmd() *cobra.Command { return cli.GetQueryCmd() }
-
 //
 
 type AppModule struct {
@@ -99,12 +96,12 @@ func (m AppModule) IsAppModule() {}
 
 func (m AppModule) IsOnePerModuleType() {}
 
-func (m AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) []abci.ValidatorUpdate {
+func (m AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, bz json.RawMessage) {
 	var genesis types.GenesisState
 	cdc.MustUnmarshalJSON(bz, &genesis)
 
 	InitGenesis(ctx, m.keeper, genesis)
-	return nil
+	return
 }
 
 func (m AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
