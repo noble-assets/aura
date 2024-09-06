@@ -48,6 +48,33 @@ func (AppModule) AutoCLIOptions() []*autocliv1.ModuleOptions {
 						Short:     "Query the blocked channels",
 					},
 				},
+				SubCommands: map[string]*autocliv1.ServiceCommandDescriptor{
+					"blocklist": {
+						Service: aurablocklistv1.Query_ServiceDesc.ServiceName,
+						RpcCommandOptions: []*autocliv1.RpcCommandOptions{
+							{
+								RpcMethod: "Owner",
+								Use:       "owner",
+								Short:     "Query the submodule's owner",
+							},
+							{
+								RpcMethod: "Addresses",
+								Use:       "addresses",
+								Short:     "Query for all blocked addresses",
+							},
+							{
+								RpcMethod: "Address",
+								Use:       "address",
+								Short:     "Query if an address is blocked",
+								PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+									{
+										ProtoField: "address",
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			Tx: &autocliv1.ServiceCommandDescriptor{
 				Service: aurav1.Msg_ServiceDesc.ServiceName,
@@ -217,70 +244,45 @@ func (AppModule) AutoCLIOptions() []*autocliv1.ModuleOptions {
 						},
 					},
 				},
-			},
-		},
-		{
-			Query: &autocliv1.ServiceCommandDescriptor{
-				Service: aurablocklistv1.Query_ServiceDesc.ServiceName,
-				RpcCommandOptions: []*autocliv1.RpcCommandOptions{
-					{
-						RpcMethod: "Owner",
-						Use:       "owner",
-						Short:     "Query the submodule's owner",
-					},
-					{
-						RpcMethod: "Addresses",
-						Use:       "addresses",
-						Short:     "Query for all blocked addresses",
-					},
-					{
-						RpcMethod: "Address",
-						Use:       "address",
-						Short:     "Query if an address is blocked",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+				SubCommands: map[string]*autocliv1.ServiceCommandDescriptor{
+					"blocklist": {
+						Service: aurablocklistv1.Msg_ServiceDesc.ServiceName,
+						RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 							{
-								ProtoField: "address",
+								RpcMethod: "TransferOwnership",
+								Use:       "transfer-ownership [new-owner]",
+								Short:     "Transfer ownership of submodule",
+								PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+									{
+										ProtoField: "new_owner",
+									},
+								},
 							},
-						},
-					},
-				},
-			},
-			Tx: &autocliv1.ServiceCommandDescriptor{
-				Service: aurablocklistv1.Msg_ServiceDesc.ServiceName,
-				RpcCommandOptions: []*autocliv1.RpcCommandOptions{
-					{
-						RpcMethod: "TransferOwnership",
-						Use:       "transfer-ownership [new-owner]",
-						Short:     "Transfer ownership of submodule",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 							{
-								ProtoField: "new_owner",
+								RpcMethod: "AcceptOwnership",
+								Use:       "accept-ownership",
+								Short:     "Accept ownership of submodule",
+								Long:      "Accept ownership of submodule, assuming there is an pending ownership transfer",
 							},
-						},
-					},
-					{
-						RpcMethod: "AcceptOwnership",
-						Use:       "accept-ownership",
-						Short:     "Accept ownership of submodule",
-						Long:      "Accept ownership of submodule, assuming there is an pending ownership transfer",
-					},
-					{
-						RpcMethod: "AddToBlocklist",
-						Use:       "add-to-blocklist [addresses ...]",
-						Short:     "Add addresses to the blocklist",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 							{
-								ProtoField: "accounts",
+								RpcMethod: "AddToBlocklist",
+								Use:       "add-to-blocklist [addresses ...]",
+								Short:     "Add addresses to the blocklist",
+								PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+									{
+										ProtoField: "accounts",
+									},
+								},
 							},
-						},
-					},
-					{
-						RpcMethod: "RemoveFromBlocklist",
-						Use:       "remove-from-blocklist [addresses ...]",
-						Short:     "Remove addresses from the blocklist",
-						PositionalArgs: []*autocliv1.PositionalArgDescriptor{
 							{
-								ProtoField: "accounts",
+								RpcMethod: "RemoveFromBlocklist",
+								Use:       "remove-from-blocklist [addresses ...]",
+								Short:     "Remove addresses from the blocklist",
+								PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+									{
+										ProtoField: "accounts",
+									},
+								},
 							},
 						},
 					},
